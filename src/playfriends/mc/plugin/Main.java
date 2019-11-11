@@ -25,7 +25,8 @@ public class Main extends JavaPlugin {
         this.configAwareListeners = Lists.newArrayList(
                 new PlayerGreetingHandler(this.playerDataManager),
                 new PeacefulStateHandler(this.playerDataManager),
-                new PeacefulMobTargetingHandler(this.playerDataManager)
+                new PeacefulMobTargetingHandler(this.playerDataManager),
+                new SleepVotingHandler(this)
         );
         this.listeners = Lists.newArrayList(
                 // none so far

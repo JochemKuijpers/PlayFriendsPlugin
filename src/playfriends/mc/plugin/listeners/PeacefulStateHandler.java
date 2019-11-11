@@ -1,7 +1,6 @@
 package playfriends.mc.plugin.listeners;
 
 import org.bukkit.ChatColor;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.Server;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -10,13 +9,9 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 import playfriends.mc.plugin.MessageUtils;
-import playfriends.mc.plugin.events.PlayerNameEvent;
 import playfriends.mc.plugin.events.PlayerPeacefulEvent;
 import playfriends.mc.plugin.playerdata.PlayerData;
 import playfriends.mc.plugin.playerdata.PlayerDataManager;
-
-import javax.swing.*;
-import java.util.Set;
 
 public class PeacefulStateHandler implements ConfigAwareListener {
     private final PlayerDataManager playerDataManager;
@@ -91,18 +86,18 @@ public class PeacefulStateHandler implements ConfigAwareListener {
 
         if (event.isPeaceful()) {
             if (playerData.isPeaceful()) {
-                player.sendMessage(MessageUtils.formatMessage(name, alreadyPeacefulMessage));
+                player.sendMessage(MessageUtils.formatMessageWithPlayerName(alreadyPeacefulMessage, name));
                 return;
             }
-            player.sendMessage(MessageUtils.formatMessage(name, changeToPeacefulMessage));
+            player.sendMessage(MessageUtils.formatMessageWithPlayerName(changeToPeacefulMessage, name));
             playerData.setPeaceful(true);
 
         } else {
             if (!playerData.isPeaceful()) {
-                player.sendMessage(MessageUtils.formatMessage(name, alreadyHostileMessage));
+                player.sendMessage(MessageUtils.formatMessageWithPlayerName(alreadyHostileMessage, name));
                 return;
             }
-            player.sendMessage(MessageUtils.formatMessage(name, changeToHostileMessage));
+            player.sendMessage(MessageUtils.formatMessageWithPlayerName(changeToHostileMessage, name));
             playerData.setPeaceful(false);
         }
 

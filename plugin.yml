@@ -1,5 +1,5 @@
 name: "PlayFriendsPlugin"
-version: "0.1"
+version: "0.2"
 author: "Jochem Kuijpers"
 main: "playfriends.mc.plugin.Main"
 api-version: "1.14"

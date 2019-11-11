@@ -1,6 +1,6 @@
 package playfriends.mc.plugin.listeners;
 
-import com.sun.org.apache.bcel.internal.generic.MONITORENTER;
+import com.google.common.collect.Sets;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
@@ -12,11 +12,46 @@ import playfriends.mc.plugin.MessageUtils;
 import playfriends.mc.plugin.playerdata.PlayerData;
 import playfriends.mc.plugin.playerdata.PlayerDataManager;
 
-import static org.bukkit.entity.EntityType.PLAYER;
+import java.util.Set;
+
+import static org.bukkit.entity.EntityType.*;
 
 public class PeacefulMobTargetingHandler implements ConfigAwareListener {
+    private static final Set<EntityType> HOSTILE_MOBS = Sets.newHashSet(
+            BLAZE,
+            CAVE_SPIDER,
+            CREEPER,
+            DROWNED,
+            ELDER_GUARDIAN,
+            ENDERMAN,
+            ENDERMITE,
+            ENDER_DRAGON,
+            EVOKER,
+            GHAST,
+            GUARDIAN,
+            HUSK,
+            MAGMA_CUBE,
+            PHANTOM,
+            PIG_ZOMBIE,
+            PILLAGER,
+            RAVAGER,
+            SHULKER,
+            SILVERFISH,
+            SKELETON,
+            SKELETON_HORSE,
+            SLIME,
+            SPIDER,
+            STRAY,
+            VEX,
+            VINDICATOR,
+            WITCH,
+            WITHER_SKELETON,
+            ZOMBIE,
+            ZOMBIE_VILLAGER
+    );
+
     private final PlayerDataManager playerDataManager;
-    private String cantDamageInPeaceefulMessage;
+    private String cantDamageInPeacefulMessage;
 
     public PeacefulMobTargetingHandler(PlayerDataManager playerDataManager) {
         this.playerDataManager = playerDataManager;
@@ -24,7 +59,7 @@ public class PeacefulMobTargetingHandler implements ConfigAwareListener {
 
     @Override
     public void updateConfig(FileConfiguration newConfig) {
-        cantDamageInPeaceefulMessage = newConfig.getString("peaceful.messages.cant-attack-hostile");
+        cantDamageInPeacefulMessage = newConfig.getString("peaceful.messages.cant-attack-hostile");
     }
 
     private boolean isPeacefulPlayer(Player player) {
@@ -36,14 +71,15 @@ public class PeacefulMobTargetingHandler implements ConfigAwareListener {
         final Entity entity = event.getEntity();
         final Entity target = event.getTarget();
         if (target == null) { return; }
-        if (!(entity instanceof Monster)) { return; }
+        if (!HOSTILE_MOBS.contains(entity.getType())) { return; }
 
         if (target.getType() == PLAYER) {
             Player player = (Player) target;
             if (isPeacefulPlayer(player)) {
                 event.setCancelled(true);
             }
-        } else if (!(target instanceof Monster)) {
+        } else if (!HOSTILE_MOBS.contains(target.getType()) && target.getType() != VILLAGER) {
+            // zombies can still attack villagers.
             event.setCancelled(true);
         }
     }
@@ -51,7 +87,7 @@ public class PeacefulMobTargetingHandler implements ConfigAwareListener {
     @EventHandler
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
         final Entity entity = event.getEntity();
-        if (!(entity instanceof Monster)) { return; }
+        if (!HOSTILE_MOBS.contains(entity.getType())) { return; }
 
         Entity damager = event.getDamager();
         ProjectileSource source = null;
@@ -77,8 +113,8 @@ public class PeacefulMobTargetingHandler implements ConfigAwareListener {
         }
 
         if (player != null) {
-            if (isPeacefulPlayer(player) && ((Monster) entity).getTarget() != player) {
-                player.sendMessage(MessageUtils.formatMessage(player.getDisplayName(), cantDamageInPeaceefulMessage));
+            if (isPeacefulPlayer(player) && ((Mob) entity).getTarget() != player) {
+                player.sendMessage(MessageUtils.formatMessageWithPlayerName(cantDamageInPeacefulMessage, player.getDisplayName()));
                 event.setCancelled(true);
             }
         }

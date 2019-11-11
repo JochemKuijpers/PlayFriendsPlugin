@@ -1,17 +1,17 @@
 greeting:
-  - "&7Hello &e{{PLAYERNAME}}&7!"
+  - "&7Hello &f{{PLAYERNAME}}&7!"
   - "&7Welcome to the &l&dPLAY&aFRIENDS &r&7Minecraft Server!"
   - ""
   - "&7We only have two rules:"
-  - " 1. No griefing or stealing."
-  - " 2. Have fun!"
+  - "&7 1. &fNo griefing or stealing."
+  - "&7 2. &fHave fun!"
   - ""
 
 messages:
-  first-join: "&7{{PLAYERNAME}} &ejoined the server &bfor the first time&e!"
-  nth-join: "&7{{PLAYERNAME}} &ejoined the server."
-  quit: "&7{{PLAYERNAME}} &eleft the server."
-  kick: "&7{{PLAYERNAME}} &cwas kicked from the server."
+  first-join: "&l&d* &r&f{{PLAYERNAME}} &ejoined the server &bfor the first time&e!"
+  nth-join: "&l&d* &r&f{{PLAYERNAME}} &ejoined the server."
+  quit: "&l&d* &r&f{{PLAYERNAME}} &eleft the server."
+  kick: "&l&d* &r&f{{PLAYERNAME}} &cwas kicked from the server."
 
 peaceful:
   default: true
@@ -24,3 +24,13 @@ peaceful:
     change-to-hostile: "&7You are now in thrill mode. Use the &e/chill &7command if you want monsters to leave you alone."
     already-hostile: "&7You are already in thrill mode. Use the &e/chill &7command if you want monsters to leave you alone."
     cant-attack-hostile: "&cYou cannot attack monsters because you are in chill mode. &7Use the &e/thrill &7command if you want to fight monsters."
+
+sleepvoting:
+  threshold:
+    constant: 2
+    percentage: 50
+  messages:
+    player-sleeping: "&f{{PLAYERNAME}} &eis now sleeping."
+    x-out-of-y: "&eSleep voting: &f%d &ein bed, &f%d &erequired."
+    night-skipped: "&eSleep voting success!"
+    spawnpoint-set: "&bYour spawnpoint has been set to this bed."
