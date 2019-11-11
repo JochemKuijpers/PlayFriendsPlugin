@@ -1,0 +1,12 @@
+name: "PlayFriendsPlugin"
+version: "0.1"
+author: "Jochem Kuijpers"
+main: "playfriends.mc.plugin.Main"
+api-version: "1.14"
+commands:
+  chill:
+    description: "Chill mode: monsters can't attack you, and you can't attack them. Opposite of /thrill."
+    usage: "/chill"
+  thrill:
+    description: "Thrill mode: monsters can attack you, and you can attack them! Opposite of /chill."
+    usage: "/thrill"

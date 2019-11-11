@@ -1,0 +1,26 @@
+greeting:
+  - "&7Hello &e{{PLAYERNAME}}&7!"
+  - "&7Welcome to the &l&dPLAY&aFRIENDS &r&7Minecraft Server!"
+  - ""
+  - "&7We only have two rules:"
+  - " 1. No griefing or stealing."
+  - " 2. Have fun!"
+  - ""
+
+messages:
+  first-join: "&7{{PLAYERNAME}} &ejoined the server &bfor the first time&e!"
+  nth-join: "&7{{PLAYERNAME}} &ejoined the server."
+  quit: "&7{{PLAYERNAME}} &eleft the server."
+  kick: "&7{{PLAYERNAME}} &cwas kicked from the server."
+
+peaceful:
+  default: true
+  greeting:
+    enabled: "&7Chill mode is enabled. See &e/help chill."
+    disabled: "&7Thrill mode is enabled. See &e/help thrill."
+  messages:
+    change-to-peaceful: "&7You are now in chill mode. Use the &e/thrill &7command if you want to fight monsters."
+    already-peaceful: "&7You are already in chill mode. Use the &e/thrill &7command if you want to fight monsters."
+    change-to-hostile: "&7You are now in thrill mode. Use the &e/chill &7command if you want monsters to leave you alone."
+    already-hostile: "&7You are already in thrill mode. Use the &e/chill &7command if you want monsters to leave you alone."
+    cant-attack-hostile: "&cYou cannot attack monsters because you are in chill mode. &7Use the &e/thrill &7command if you want to fight monsters."
