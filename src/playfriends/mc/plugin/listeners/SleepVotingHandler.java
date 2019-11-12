@@ -8,10 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.*;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
 import playfriends.mc.plugin.MessageUtils;
-import playfriends.mc.plugin.playerdata.PlayerDataManager;
 
 import java.util.*;
 
@@ -28,6 +25,7 @@ public class SleepVotingHandler implements ConfigAwareListener {
     private String sleepingCountMessage;
     private String nightSkippedMessage;
     private String spawnpointSetMessage;
+    private String spawnpointHintMessage;
 
 
     public SleepVotingHandler(Plugin plugin) {
@@ -43,6 +41,7 @@ public class SleepVotingHandler implements ConfigAwareListener {
         sleepingCountMessage = newConfig.getString("sleepvoting.messages.x-out-of-y");
         nightSkippedMessage = newConfig.getString("sleepvoting.messages.night-skipped");
         spawnpointSetMessage = newConfig.getString("sleepvoting.messages.spawnpoint-set");
+        spawnpointHintMessage = newConfig.getString("sleepvoting.messages.spawnpoint-hint");
     }
 
     private void addToSleeping(World world, Player player) {
@@ -109,6 +108,32 @@ public class SleepVotingHandler implements ConfigAwareListener {
         return (world.getFullTime() % 24000 >= 12000 || world.isThundering());
     }
 
+    private void tryUpdatePlayerSpawnToBed(Player player, Location bedLocation) {
+        final Location spawnLocation = player.getBedSpawnLocation();
+
+        player.setBedSpawnLocation(bedLocation, false);
+
+        boolean hasSpawnUpdated;
+        if (spawnLocation == null ) {
+            hasSpawnUpdated = player.getBedSpawnLocation() != null;
+        } else {
+            hasSpawnUpdated = !spawnLocation.equals(player.getBedSpawnLocation());
+        }
+
+        if (hasSpawnUpdated) {
+            player.sendMessage(MessageUtils.formatMessage(spawnpointSetMessage));
+        }
+    }
+
+    private void tryHintPlayerSpawn(Player player, Location bedLocation) {
+        final Location spawnLocation = player.getBedSpawnLocation();
+        boolean sendHint = spawnLocation == null || spawnLocation.distance(bedLocation) >= 2;
+
+        if (sendHint) {
+            player.sendMessage(MessageUtils.formatMessage(spawnpointHintMessage));
+        }
+    }
+
     @EventHandler
     public void onPlayerBedEnter(PlayerBedEnterEvent event) {
         final Player player = event.getPlayer();
@@ -118,21 +143,19 @@ public class SleepVotingHandler implements ConfigAwareListener {
 
         // set spawn
         final Location bedLocation = event.getBed().getLocation();
-        if (!bedLocation.equals(player.getBedSpawnLocation())) {
-            // attempt to set spawn location
-            player.setBedSpawnLocation(bedLocation, false);
-
-            if (bedLocation.equals(player.getBedSpawnLocation())) {
-                player.sendMessage(MessageUtils.formatMessage(spawnpointSetMessage));
-            }
+        if (player.isSneaking()) {
+            tryUpdatePlayerSpawnToBed(player, bedLocation);
+        } else {
+            tryHintPlayerSpawn(player, bedLocation);
         }
 
         // sleep voting
-        if (!canSleep(world)) {
+        if (!canSleep(world) || event.getBedEnterResult() != PlayerBedEnterEvent.BedEnterResult.OK) {
             event.setCancelled(true);
             return;
         }
 
+        tryUpdatePlayerSpawnToBed(player, bedLocation);
         server.broadcastMessage(MessageUtils.formatMessageWithPlayerName(playerSleepingMessage, name));
         addToSleeping(world, player);
     }
@@ -140,6 +163,7 @@ public class SleepVotingHandler implements ConfigAwareListener {
     @EventHandler
     public void onPlayerBedLeave(PlayerBedLeaveEvent event) {
         final Player player = event.getPlayer();
+        event.setSpawnLocation(false);
         removeFromSleeping(player.getWorld(), player);
     }
 

@@ -34,3 +34,4 @@ sleepvoting:
     x-out-of-y: "&eSleep voting: &f%d &ein bed, &f%d &erequired."
     night-skipped: "&eSleep voting success!"
     spawnpoint-set: "&bYour spawnpoint has been set to this bed."
+    spawnpoint-hint: "&7Hold sneak and use the bed to set your spawn point."
