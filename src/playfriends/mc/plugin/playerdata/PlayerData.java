@@ -18,8 +18,15 @@ public class PlayerData {
     /** How many times has this person visited the server. */
     private long timesSeen;
 
+    /** Real clock time when the player moved last (Unix milliseconds), not saved. */
+    private long lastMove;
+
+    /** Whether or not the player is considered AFK, not saved. */
+    private boolean isAfk;
+
     public PlayerData(UUID uuid) {
         this.uuid = uuid;
+        this.lastMove = System.currentTimeMillis();
     }
 
     public UUID getUUID() {
@@ -80,5 +87,21 @@ public class PlayerData {
                 "peaceful = " + (peaceful ? "true" : "false"),
                 "times-seen = " + timesSeen
         );
+    }
+
+    public long getLastMove() {
+        return lastMove;
+    }
+
+    public void setLastMove(long lastMove) {
+        this.lastMove = lastMove;
+    }
+
+    public boolean isAfk() {
+        return isAfk;
+    }
+
+    public void setAfk(boolean afk) {
+        isAfk = afk;
     }
 }

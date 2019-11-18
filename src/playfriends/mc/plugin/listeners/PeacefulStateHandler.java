@@ -9,6 +9,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 import playfriends.mc.plugin.MessageUtils;
+import playfriends.mc.plugin.events.PlayerAFKEvent;
 import playfriends.mc.plugin.events.PlayerPeacefulEvent;
 import playfriends.mc.plugin.playerdata.PlayerData;
 import playfriends.mc.plugin.playerdata.PlayerDataManager;
@@ -18,6 +19,7 @@ public class PeacefulStateHandler implements ConfigAwareListener {
 
     private Team chillTeam;
     private Team thrillTeam;
+    private Team afkTeam;
 
     private String changeToPeacefulMessage;
     private String alreadyPeacefulMessage;
@@ -45,6 +47,7 @@ public class PeacefulStateHandler implements ConfigAwareListener {
 
         chillTeam = scoreboard.getTeam("ChillTeam");
         thrillTeam = scoreboard.getTeam("ThrillTeam");
+        afkTeam = scoreboard.getTeam("AfkTeam");
 
         if (chillTeam == null) {
             chillTeam = scoreboard.registerNewTeam("ChillTeam");
@@ -54,6 +57,11 @@ public class PeacefulStateHandler implements ConfigAwareListener {
         if (thrillTeam == null) {
             thrillTeam = scoreboard.registerNewTeam("ThrillTeam");
             thrillTeam.setColor(ChatColor.LIGHT_PURPLE);
+        }
+
+        if (afkTeam == null) {
+            afkTeam = scoreboard.registerNewTeam("AfkTeam");
+            afkTeam.setColor(ChatColor.GRAY);
         }
     }
 
@@ -75,6 +83,27 @@ public class PeacefulStateHandler implements ConfigAwareListener {
         } else {
             chillTeam.removeEntry(player.getName());
             thrillTeam.addEntry(player.getName());
+        }
+    }
+
+    @EventHandler
+    public void onPlayerAFK(PlayerAFKEvent event) {
+        final Player player = event.getPlayer();
+        final PlayerData playerData = playerDataManager.getPlayerData(player.getUniqueId());
+
+        assertTeamsAreSet(player.getServer());
+
+        if (event.isAfk()) {
+            thrillTeam.removeEntry(player.getName());
+            chillTeam.removeEntry(player.getName());
+            afkTeam.addEntry(player.getName());
+        } else {
+            afkTeam.removeEntry(player.getName());
+            if (playerData.isPeaceful()) {
+                chillTeam.addEntry(player.getName());
+            } else {
+                thrillTeam.addEntry(player.getName());
+            }
         }
     }
 

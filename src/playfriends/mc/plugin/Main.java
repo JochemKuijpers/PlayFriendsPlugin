@@ -26,7 +26,8 @@ public class Main extends JavaPlugin {
                 new PlayerGreetingHandler(this.playerDataManager),
                 new PeacefulStateHandler(this.playerDataManager),
                 new PeacefulMobTargetingHandler(this.playerDataManager),
-                new SleepVotingHandler(this)
+                new SleepVotingHandler(this, this.playerDataManager),
+                new AFKDetectionHandler(this, this.playerDataManager)
         );
         this.listeners = Lists.newArrayList(
                 // none so far

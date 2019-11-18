@@ -63,7 +63,8 @@ public class PeacefulMobTargetingHandler implements ConfigAwareListener {
     }
 
     private boolean isPeacefulPlayer(Player player) {
-        return playerDataManager.getPlayerData(player.getUniqueId()).isPeaceful();
+        final PlayerData data = playerDataManager.getPlayerData(player.getUniqueId());
+        return data.isPeaceful() || data.isAfk();
     }
 
     @EventHandler

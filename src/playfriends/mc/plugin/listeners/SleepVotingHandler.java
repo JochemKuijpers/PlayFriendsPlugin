@@ -6,9 +6,13 @@ import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.player.*;
 import org.bukkit.plugin.Plugin;
 import playfriends.mc.plugin.MessageUtils;
+import playfriends.mc.plugin.events.PlayerAFKEvent;
+import playfriends.mc.plugin.playerdata.PlayerData;
+import playfriends.mc.plugin.playerdata.PlayerDataManager;
 
 import java.util.*;
 
@@ -17,20 +21,48 @@ public class SleepVotingHandler implements ConfigAwareListener {
     private final static int IN_BED_DELAY = 40;
 
     private final Plugin plugin;
-    private final HashMap<World, Set<Player>> sleepingPlayers;
+    private final PlayerDataManager playerDataManager;
+
+    private static class VoteState {
+        final Set<Player> sleepingPlayers;
+        /** whether or not the vote is currently active */
+        boolean isActive;
+        /** whether or not the vote was a success */
+        boolean success;
+        int communicatedSleepCount;
+        int communicatedThreshold;
+
+        private VoteState() {
+            sleepingPlayers = new HashSet<>();
+            reset();
+        }
+
+        public void reset() {
+            sleepingPlayers.clear();
+            isActive = false;
+            success = false;
+            communicatedSleepCount = 0;
+            communicatedThreshold = 0;
+        }
+    }
+
+    private final Map<World, VoteState> voteStateForWorld;
 
     private int sleepThresholdConstant;
     private int sleepThresholdFactor;
     private String playerSleepingMessage;
     private String sleepingCountMessage;
-    private String nightSkippedMessage;
+    private String successMessage;
+    private String abortedMessageCantSleep;
+    private String abortedMessageNobodySleeping;
     private String spawnpointSetMessage;
-    private String spawnpointHintMessage;
+    private String spawnpointHintMessage;;
 
 
-    public SleepVotingHandler(Plugin plugin) {
+    public SleepVotingHandler(Plugin plugin, PlayerDataManager playerDataManager) {
         this.plugin = plugin;
-        this.sleepingPlayers = new HashMap<>();
+        this.playerDataManager = playerDataManager;
+        this.voteStateForWorld = new HashMap<>();
     }
 
     @Override
@@ -39,61 +71,77 @@ public class SleepVotingHandler implements ConfigAwareListener {
         sleepThresholdFactor = newConfig.getInt("sleepvoting.threshold.percentage");
         playerSleepingMessage = newConfig.getString("sleepvoting.messages.player-sleeping");
         sleepingCountMessage = newConfig.getString("sleepvoting.messages.x-out-of-y");
-        nightSkippedMessage = newConfig.getString("sleepvoting.messages.night-skipped");
+        successMessage = newConfig.getString("sleepvoting.messages.success");
+        abortedMessageCantSleep = newConfig.getString("sleepvoting.messages.aborted-cant-sleep");
+        abortedMessageNobodySleeping = newConfig.getString("sleepvoting.messages.aborted-nobody-sleeping");
         spawnpointSetMessage = newConfig.getString("sleepvoting.messages.spawnpoint-set");
         spawnpointHintMessage = newConfig.getString("sleepvoting.messages.spawnpoint-hint");
     }
 
-    private void addToSleeping(World world, Player player) {
-        final Set<Player> sleepingInThisWorld = sleepingPlayers.computeIfAbsent(world, x -> new HashSet<>());
-
-        if (sleepingInThisWorld.add(player)) {
-            broadcastSleepingMessage(player);
-            voteToSkipNightOrThunder(player);
-        }
-    }
-
-    private void removeFromSleeping(World world, Player player) {
-        final Set<Player> sleepingInThisWorld = sleepingPlayers.computeIfAbsent(world, x -> new HashSet<>());
-
-        boolean needsVote = sleepingInThisWorld.size() > 0;
-
-        if (sleepingInThisWorld.remove(player)) {
-            // only vote when people can still sleep
-            needsVote = needsVote && canSleep(world);
-        }
-
-        if (needsVote) {
-            broadcastSleepingMessage(player);
-            voteToSkipNightOrThunder(player);
-        }
-    }
-
-    private int getThreshold(World world) {
-        final int currentlyOnline = world.getPlayers().size();
-        final int threshold = Math.max(sleepThresholdConstant, (sleepThresholdFactor * currentlyOnline) / 100);
-        return Math.min(threshold, world.getPlayers().size());
-    }
-
-    private void broadcastSleepingMessage(Player player) {
+    private void doSleepVoting(Player player, World world, boolean isSleeping) {
         final Server server = player.getServer();
-        final World world = player.getWorld();
+        final VoteState voteState = voteStateForWorld.computeIfAbsent(world, x -> new VoteState());
 
-        server.broadcastMessage(MessageUtils.formatMessage(sleepingCountMessage, sleepingPlayers.get(world).size(), getThreshold(world)));
-    }
+        if (isSleeping && !voteState.success) {
+            server.broadcastMessage(MessageUtils.formatMessage(playerSleepingMessage, player.getDisplayName()));
+            voteState.sleepingPlayers.add(player);
+            voteState.isActive = true;
+        } else if (voteState.sleepingPlayers.remove(player)) {
+            if (voteState.isActive && !voteState.success) {
+                if (voteState.sleepingPlayers.size() == 0) {
+                    server.broadcastMessage(MessageUtils.formatMessage(abortedMessageNobodySleeping));
+                    voteState.reset();
+                } else if (!canSleep(world)) {
+                    server.broadcastMessage(MessageUtils.formatMessage(abortedMessageCantSleep));
+                    voteState.reset();
+                }
+            }
+        }
 
-    private void voteToSkipNightOrThunder(Player player) {
-        final Server server = player.getServer();
-        final World world = player.getWorld();
+        final int numSleepingPlayers = voteState.sleepingPlayers.size();
+        int activePlayers = 0;
+        for (Player worldPlayer : world.getPlayers()) {
+            final PlayerData data = playerDataManager.getPlayerData(player.getUniqueId());
+            if (!data.isAfk()) {
+                activePlayers += 1;
+            }
+        }
+        final int threshold = getThreshold(activePlayers);
+        boolean needThresholdBroadcast = false;
 
-        if (sleepingPlayers.get(world).size() >= getThreshold(world)) {
+        // if the number of sleeping players changed
+        if (voteState.communicatedSleepCount != numSleepingPlayers) {
+            needThresholdBroadcast = true;
+        }
+
+        // or the threshold changed while someone was sleeping
+        if (numSleepingPlayers != 0 && voteState.communicatedThreshold != threshold) {
+            needThresholdBroadcast = true;
+        }
+
+        // AND the vote is active and hasn't succeeded yet
+        if (!voteState.isActive || voteState.success) {
+            needThresholdBroadcast = false;
+        }
+
+        // then broadcast the current count/threshold
+        if (needThresholdBroadcast) {
+            voteState.communicatedSleepCount = numSleepingPlayers;
+            voteState.communicatedThreshold = threshold;
+            server.broadcastMessage(MessageUtils.formatMessage(sleepingCountMessage, numSleepingPlayers, threshold));
+        }
+
+        if (voteState.isActive && !voteState.success && numSleepingPlayers >= threshold) {
             long currentTime = world.getFullTime();
             long wakeupTime = ((currentTime / 24000) + 1) * 24000 + WAKEUP_TIME;
 
-            server.broadcastMessage(MessageUtils.formatMessage(nightSkippedMessage));
+            server.broadcastMessage(MessageUtils.formatMessage(successMessage));
+            voteState.isActive = false;
+            voteState.success = true;
 
-            player.getServer().getScheduler().runTaskLater(plugin,
+            server.getScheduler().runTaskLater(plugin,
                     () -> {
+                        voteState.reset();
                         world.setThundering(false);
                         if (canSleep(world) && world.getFullTime() < wakeupTime) {
                             world.setFullTime(wakeupTime);
@@ -102,6 +150,11 @@ public class SleepVotingHandler implements ConfigAwareListener {
                     IN_BED_DELAY
             );
         }
+    }
+
+    private int getThreshold(int numPlayers) {
+        final int threshold = Math.max(sleepThresholdConstant, (sleepThresholdFactor * numPlayers) / 100);
+        return Math.min(threshold, numPlayers);
     }
 
     private boolean canSleep(World world) {
@@ -137,9 +190,6 @@ public class SleepVotingHandler implements ConfigAwareListener {
     @EventHandler
     public void onPlayerBedEnter(PlayerBedEnterEvent event) {
         final Player player = event.getPlayer();
-        final String name = player.getDisplayName();
-        final Server server = player.getServer();
-        final World world = player.getWorld();
 
         // set spawn
         final Location bedLocation = event.getBed().getLocation();
@@ -149,38 +199,56 @@ public class SleepVotingHandler implements ConfigAwareListener {
             tryHintPlayerSpawn(player, bedLocation);
         }
 
-        // sleep voting
-        if (!canSleep(world) || event.getBedEnterResult() != PlayerBedEnterEvent.BedEnterResult.OK) {
-            event.setCancelled(true);
-            return;
+        if (event.getBedEnterResult() == PlayerBedEnterEvent.BedEnterResult.OK) {
+            tryUpdatePlayerSpawnToBed(player, bedLocation);
+            final World world = player.getWorld();
+            doSleepVoting(player, world, true);
         }
-
-        tryUpdatePlayerSpawnToBed(player, bedLocation);
-        server.broadcastMessage(MessageUtils.formatMessageWithPlayerName(playerSleepingMessage, name));
-        addToSleeping(world, player);
     }
 
     @EventHandler
     public void onPlayerBedLeave(PlayerBedLeaveEvent event) {
         final Player player = event.getPlayer();
+        final World world = player.getWorld();
         event.setSpawnLocation(false);
-        removeFromSleeping(player.getWorld(), player);
+        doSleepVoting(player, world, false);
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerQuit(PlayerQuitEvent event) {
         final Player player = event.getPlayer();
-        removeFromSleeping(player.getWorld(), player);
+        final World world = player.getWorld();
+        doSleepVoting(player, world, false);
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerKick(PlayerKickEvent event) {
         final Player player = event.getPlayer();
-        removeFromSleeping(player.getWorld(), player);
+        final World world = player.getWorld();
+        doSleepVoting(player, world, false);
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerLeaveWorld(PlayerChangedWorldEvent event) {
-        removeFromSleeping(event.getFrom(), event.getPlayer());
+        // doesn't change sleep count, but might change threshold!
+        final Player player = event.getPlayer();
+        final World from = event.getFrom();
+        final World to = player.getWorld();
+
+        // update both worlds
+        doSleepVoting(player, from, false);
+        doSleepVoting(player, to, false);
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onPlayerAfk(PlayerAFKEvent event) {
+        final Player player = event.getPlayer();
+        final World world = player.getWorld();
+
+        if (event.isAfk()) {
+            doSleepVoting(player, world, false);
+        } else {
+            doSleepVoting(player, world, player.isSleeping());
+        }
     }
 }
