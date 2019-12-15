@@ -35,8 +35,6 @@ sleepvoting:
     success: "&eSleep voting: &fsuccess&e!"
     aborted-cant-sleep: "&eSleep voting: &caborted &ebecause sleeping is not possible anymore."
     aborted-nobody-sleeping: "&eSleep voting: &caborted &ebecause nobody is sleeping anymore."
-    spawnpoint-set: "&bYour spawnpoint has been set to this bed."
-    spawnpoint-hint: "&7Hold sneak and use the bed to set your spawn point."
     moved-worlds: "&eSleep voting: &f%s &eused a portal."
 
 afk:

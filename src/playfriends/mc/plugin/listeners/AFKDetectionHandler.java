@@ -6,7 +6,10 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
+import org.bukkit.event.player.PlayerAnimationEvent;
+import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerVelocityEvent;
 import org.bukkit.event.server.ServerLoadEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
@@ -17,7 +20,7 @@ import playfriends.mc.plugin.playerdata.PlayerDataManager;
 
 public class AFKDetectionHandler implements ConfigAwareListener {
     private static final long MILLIS_PER_MINUTE = 60_000;
-    private static final long TICKS_BETWEEN_DETECTION = 300;
+    private static final long TICKS_BETWEEN_DETECTION = 21;
     private final PlayerDataManager playerDataManager;
     private final Plugin plugin;
     private final Server server;
@@ -49,7 +52,8 @@ public class AFKDetectionHandler implements ConfigAwareListener {
                     long currentTime = System.currentTimeMillis();
                     for (Player player : server.getOnlinePlayers()) {
                         final PlayerData data = playerDataManager.getPlayerData(player.getUniqueId());
-                        if (!data.isAfk() && data.getLastMove() < currentTime - timeout * MILLIS_PER_MINUTE) {
+                        if (!data.isAfk() && !player.isSleeping() && !player.isInsideVehicle() &&
+                                data.getLastMove() < currentTime - timeout * MILLIS_PER_MINUTE) {
                             data.setAfk(true);
                             pluginManager.callEvent(new PlayerAFKEvent(player, true));
                         }
@@ -60,15 +64,23 @@ public class AFKDetectionHandler implements ConfigAwareListener {
         );
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void onPlayerMove(PlayerMoveEvent event) {
-        final Player player = event.getPlayer();
+    private void onPlayerDidSomething(Player player) {
         final PlayerData data = playerDataManager.getPlayerData(player.getUniqueId());
         data.setLastMove(System.currentTimeMillis());
         if (data.isAfk()) {
             data.setAfk(false);
             pluginManager.callEvent(new PlayerAFKEvent(player, false));
         }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onPlayerMove(PlayerMoveEvent event) {
+        onPlayerDidSomething(event.getPlayer());
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onPlayerVelocity(PlayerVelocityEvent event) {
+        onPlayerDidSomething(event.getPlayer());
     }
 
     @EventHandler

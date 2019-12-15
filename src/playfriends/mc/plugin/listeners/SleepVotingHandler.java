@@ -1,6 +1,5 @@
 package playfriends.mc.plugin.listeners;
 
-import org.bukkit.Location;
 import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -32,12 +31,12 @@ public class SleepVotingHandler implements ConfigAwareListener {
         int communicatedSleepCount;
         int communicatedThreshold;
 
-        private VoteState() {
+        VoteState() {
             sleepingPlayers = new HashSet<>();
             reset();
         }
 
-        public void reset() {
+        void reset() {
             sleepingPlayers.clear();
             isActive = false;
             success = false;
@@ -55,8 +54,7 @@ public class SleepVotingHandler implements ConfigAwareListener {
     private String successMessage;
     private String abortedMessageCantSleep;
     private String abortedMessageNobodySleeping;
-    private String spawnpointSetMessage;
-    private String spawnpointHintMessage;;
+    private String movedWorldMessage;
 
 
     public SleepVotingHandler(Plugin plugin, PlayerDataManager playerDataManager) {
@@ -74,11 +72,10 @@ public class SleepVotingHandler implements ConfigAwareListener {
         successMessage = newConfig.getString("sleepvoting.messages.success");
         abortedMessageCantSleep = newConfig.getString("sleepvoting.messages.aborted-cant-sleep");
         abortedMessageNobodySleeping = newConfig.getString("sleepvoting.messages.aborted-nobody-sleeping");
-        spawnpointSetMessage = newConfig.getString("sleepvoting.messages.spawnpoint-set");
-        spawnpointHintMessage = newConfig.getString("sleepvoting.messages.spawnpoint-hint");
+        movedWorldMessage = newConfig.getString("sleepvoting.messages.moved-worlds");
     }
 
-    private void doSleepVoting(Player player, World world, boolean isSleeping) {
+    private void doSleepVoting(Player player, World world, boolean isSleeping, boolean didTeleport) {
         final Server server = player.getServer();
         final VoteState voteState = voteStateForWorld.computeIfAbsent(world, x -> new VoteState());
 
@@ -101,7 +98,7 @@ public class SleepVotingHandler implements ConfigAwareListener {
         final int numSleepingPlayers = voteState.sleepingPlayers.size();
         int activePlayers = 0;
         for (Player worldPlayer : world.getPlayers()) {
-            final PlayerData data = playerDataManager.getPlayerData(player.getUniqueId());
+            final PlayerData data = playerDataManager.getPlayerData(worldPlayer.getUniqueId());
             if (!data.isAfk()) {
                 activePlayers += 1;
             }
@@ -126,6 +123,10 @@ public class SleepVotingHandler implements ConfigAwareListener {
 
         // then broadcast the current count/threshold
         if (needThresholdBroadcast) {
+            if (didTeleport) {
+                server.broadcastMessage(MessageUtils.formatMessage(movedWorldMessage, player.getDisplayName()));
+            }
+
             voteState.communicatedSleepCount = numSleepingPlayers;
             voteState.communicatedThreshold = threshold;
             server.broadcastMessage(MessageUtils.formatMessage(sleepingCountMessage, numSleepingPlayers, threshold));
@@ -161,48 +162,13 @@ public class SleepVotingHandler implements ConfigAwareListener {
         return (world.getFullTime() % 24000 >= 12000 || world.isThundering());
     }
 
-    private void tryUpdatePlayerSpawnToBed(Player player, Location bedLocation) {
-        final Location spawnLocation = player.getBedSpawnLocation();
-
-        player.setBedSpawnLocation(bedLocation, false);
-
-        boolean hasSpawnUpdated;
-        if (spawnLocation == null ) {
-            hasSpawnUpdated = player.getBedSpawnLocation() != null;
-        } else {
-            hasSpawnUpdated = !spawnLocation.equals(player.getBedSpawnLocation());
-        }
-
-        if (hasSpawnUpdated) {
-            player.sendMessage(MessageUtils.formatMessage(spawnpointSetMessage));
-        }
-    }
-
-    private void tryHintPlayerSpawn(Player player, Location bedLocation) {
-        final Location spawnLocation = player.getBedSpawnLocation();
-        boolean sendHint = spawnLocation == null || spawnLocation.distance(bedLocation) >= 2;
-
-        if (sendHint) {
-            player.sendMessage(MessageUtils.formatMessage(spawnpointHintMessage));
-        }
-    }
-
     @EventHandler
     public void onPlayerBedEnter(PlayerBedEnterEvent event) {
         final Player player = event.getPlayer();
 
-        // set spawn
-        final Location bedLocation = event.getBed().getLocation();
-        if (player.isSneaking()) {
-            tryUpdatePlayerSpawnToBed(player, bedLocation);
-        } else {
-            tryHintPlayerSpawn(player, bedLocation);
-        }
-
         if (event.getBedEnterResult() == PlayerBedEnterEvent.BedEnterResult.OK) {
-            tryUpdatePlayerSpawnToBed(player, bedLocation);
             final World world = player.getWorld();
-            doSleepVoting(player, world, true);
+            doSleepVoting(player, world, true, false);
         }
     }
 
@@ -210,34 +176,33 @@ public class SleepVotingHandler implements ConfigAwareListener {
     public void onPlayerBedLeave(PlayerBedLeaveEvent event) {
         final Player player = event.getPlayer();
         final World world = player.getWorld();
-        event.setSpawnLocation(false);
-        doSleepVoting(player, world, false);
+        doSleepVoting(player, world, false, false);
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerQuit(PlayerQuitEvent event) {
         final Player player = event.getPlayer();
         final World world = player.getWorld();
-        doSleepVoting(player, world, false);
+        doSleepVoting(player, world, false, false);
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerKick(PlayerKickEvent event) {
         final Player player = event.getPlayer();
         final World world = player.getWorld();
-        doSleepVoting(player, world, false);
+        doSleepVoting(player, world, false, false);
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerLeaveWorld(PlayerChangedWorldEvent event) {
-        // doesn't change sleep count, but might change threshold!
+        // doesn't change sleep count as you cant teleport while sleeping, but it might change threshold!
         final Player player = event.getPlayer();
         final World from = event.getFrom();
         final World to = player.getWorld();
 
         // update both worlds
-        doSleepVoting(player, from, false);
-        doSleepVoting(player, to, false);
+        doSleepVoting(player, from, false, true);
+        doSleepVoting(player, to, false, true);
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
@@ -246,9 +211,9 @@ public class SleepVotingHandler implements ConfigAwareListener {
         final World world = player.getWorld();
 
         if (event.isAfk()) {
-            doSleepVoting(player, world, false);
+            doSleepVoting(player, world, false, false);
         } else {
-            doSleepVoting(player, world, player.isSleeping());
+            doSleepVoting(player, world, player.isSleeping(), false);
         }
     }
 }
