@@ -36,9 +36,22 @@ sleepvoting:
     aborted-cant-sleep: "&eSleep voting: &caborted &ebecause sleeping is not possible anymore."
     aborted-nobody-sleeping: "&eSleep voting: &caborted &ebecause nobody is sleeping anymore."
     moved-worlds: "&eSleep voting: &f%s &eused a portal."
+    vote-by-command: "&eSleep voting: &f%s &evoted to sleep with &f/zzz."
+    vote-by-command-not-allowed: "&cAt least one person must sleep in a bed to start sleep voting."
 
 afk:
   timeout: 1
   messages:
     away: "&7AFK detection: You are inactive."
     back: "&7AFK detection: Welcome back!"
+
+whois:
+  not-found: "&cThis player does not exist."
+  no-nickname: "&f%s &7does not have an alias configured."
+  player-aka-alias: "&f%s &7is also known as &f%s&7."
+
+alias:
+  no-alias-greeting: "&7You have not set an alias. See &e/help alias&7."
+  alias-removed: "&eYour alias has been removed."
+  alias-set-to: "&eYour alias is set to &f%s&e. Use &f/whois <player>&e to see their alias."
+  alias-not-allowed: "&cInvalid alias: &f%s&c."
