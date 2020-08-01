@@ -1,15 +1,11 @@
 package playfriends.mc.plugin.listeners;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Server;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
-import org.bukkit.event.player.PlayerAnimationEvent;
-import org.bukkit.event.player.PlayerEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerVelocityEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.event.server.ServerLoadEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
@@ -64,7 +60,7 @@ public class AFKDetectionHandler implements ConfigAwareListener {
         );
     }
 
-    private void onPlayerDidSomething(Player player) {
+    private void registerPlayerActivity(Player player) {
         final PlayerData data = playerDataManager.getPlayerData(player.getUniqueId());
         data.setLastMove(System.currentTimeMillis());
         if (data.isAfk()) {
@@ -75,12 +71,17 @@ public class AFKDetectionHandler implements ConfigAwareListener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerMove(PlayerMoveEvent event) {
-        onPlayerDidSomething(event.getPlayer());
+        registerPlayerActivity(event.getPlayer());
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerVelocity(PlayerVelocityEvent event) {
-        onPlayerDidSomething(event.getPlayer());
+        registerPlayerActivity(event.getPlayer());
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        registerPlayerActivity(event.getPlayer());
     }
 
     @EventHandler

@@ -16,8 +16,8 @@ messages:
 peaceful:
   default: true
   greeting:
-    enabled: "&7Chill mode is enabled. See &e/help chill."
-    disabled: "&7Thrill mode is enabled. See &e/help thrill."
+    enabled: "&7Chill mode is enabled. See &e/help chill&7."
+    disabled: "&7Thrill mode is enabled. See &e/help thrill&7."
   messages:
     change-to-peaceful: "&7You are now in chill mode. Use the &e/thrill &7command if you want to fight monsters."
     already-peaceful: "&7You are already in chill mode. Use the &e/thrill &7command if you want to fight monsters."

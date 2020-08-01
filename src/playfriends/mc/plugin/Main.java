@@ -5,7 +5,6 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Listener;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import playfriends.mc.plugin.events.PlayerPeacefulEvent;
@@ -16,7 +15,6 @@ import java.util.List;
 
 public class Main extends JavaPlugin {
     private final List<ConfigAwareListener> configAwareListeners;
-    private final List<Listener> listeners;
     private final PlayerDataManager playerDataManager;
     private PluginManager pluginManager;
 
@@ -28,9 +26,6 @@ public class Main extends JavaPlugin {
                 new PeacefulMobTargetingHandler(this.playerDataManager),
                 new SleepVotingHandler(this, this.playerDataManager),
                 new AFKDetectionHandler(this, this.playerDataManager)
-        );
-        this.listeners = Lists.newArrayList(
-                // none so far
         );
     }
 
@@ -52,10 +47,6 @@ public class Main extends JavaPlugin {
             pluginManager.registerEvents(configAwareListener, this);
         }
 
-        for (Listener listener : listeners) {
-            pluginManager.registerEvents(listener, this);
-        }
-
         playerDataManager.loadAll();
     }
 
@@ -63,20 +54,20 @@ public class Main extends JavaPlugin {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         switch (command.getName()) {
             case "chill":
-                if (sender instanceof Player) {
+                if (!(sender instanceof Player)) {
+                    sender.sendMessage("Only players can use this command.");
+                } else {
                     Player player = (Player) sender;
                     pluginManager.callEvent(new PlayerPeacefulEvent(player, true));
-                } else {
-                    sender.sendMessage("Only players can use this command.");
                 }
                 return true;
 
             case "thrill":
-                if (sender instanceof Player) {
+                if (!(sender instanceof Player)) {
+                    sender.sendMessage("Only players can use this command.");
+                } else {
                     Player player = (Player) sender;
                     pluginManager.callEvent(new PlayerPeacefulEvent(player, false));
-                } else {
-                    sender.sendMessage("Only players can use this command.");
                 }
                 return true;
 
