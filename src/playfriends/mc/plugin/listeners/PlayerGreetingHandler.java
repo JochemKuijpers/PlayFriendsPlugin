@@ -27,6 +27,8 @@ public class PlayerGreetingHandler implements ConfigAwareListener {
     private String peacefulEnabledGreeting;
     private String peacefulDisabledGreeting;
 
+    private String noAliasGreeting;
+
     public PlayerGreetingHandler(PlayerDataManager playerDataManager) {
         this.greetingStrings = new ArrayList<>();
         this.playerDataManager = playerDataManager;
@@ -43,6 +45,8 @@ public class PlayerGreetingHandler implements ConfigAwareListener {
 
         peacefulEnabledGreeting = newConfig.getString("peaceful.greeting.enabled");
         peacefulDisabledGreeting = newConfig.getString("peaceful.greeting.disabled");
+
+        noAliasGreeting = newConfig.getString("alias.no-alias-greeting");
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -50,6 +54,7 @@ public class PlayerGreetingHandler implements ConfigAwareListener {
         final Player player = event.getPlayer();
         final PlayerData playerData = playerDataManager.getPlayerData(player.getUniqueId());
 
+        playerData.setPlayerName(player.getDisplayName());
         playerData.setTimesSeen(playerData.getTimesSeen() + 1);
         String greetingMessage = (playerData.getTimesSeen() == 1) ? firstJoinMessage : nthJoinMessage;
 
@@ -67,9 +72,13 @@ public class PlayerGreetingHandler implements ConfigAwareListener {
         } else {
             player.sendMessage(MessageUtils.formatMessageWithPlayerName(peacefulDisabledGreeting, name));
         }
+
+        // if no alias is set, tell them to set one.
+        final String alias = playerData.getAlias();
+        if (alias == null || alias.isEmpty()) {
+            player.sendMessage(MessageUtils.formatMessage(noAliasGreeting));
+        }
     }
-
-
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {

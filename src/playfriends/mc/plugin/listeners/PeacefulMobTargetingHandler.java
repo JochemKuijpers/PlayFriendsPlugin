@@ -3,6 +3,7 @@ package playfriends.mc.plugin.listeners;
 import com.google.common.collect.Sets;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.*;
+import org.bukkit.entity.minecart.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
@@ -28,26 +29,32 @@ public class PeacefulMobTargetingHandler implements ConfigAwareListener {
             ENDER_DRAGON,
             EVOKER,
             GHAST,
+            GIANT,
             GUARDIAN,
+            HOGLIN,
             HUSK,
+            ILLUSIONER,
             MAGMA_CUBE,
             PHANTOM,
-            PIG_ZOMBIE,
+            PIGLIN,
             PILLAGER,
             RAVAGER,
             SHULKER,
             SILVERFISH,
             SKELETON,
-            SKELETON_HORSE,
             SLIME,
             SPIDER,
             STRAY,
+            STRIDER,
             VEX,
             VINDICATOR,
             WITCH,
+            WITHER,
             WITHER_SKELETON,
+            ZOGLIN,
             ZOMBIE,
-            ZOMBIE_VILLAGER
+            ZOMBIE_VILLAGER,
+            ZOMBIFIED_PIGLIN
     );
 
     private final PlayerDataManager playerDataManager;
