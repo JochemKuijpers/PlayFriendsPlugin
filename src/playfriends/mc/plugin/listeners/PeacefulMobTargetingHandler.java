@@ -1,9 +1,7 @@
 package playfriends.mc.plugin.listeners;
 
-import com.google.common.collect.Sets;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.*;
-import org.bukkit.entity.minecart.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
@@ -18,7 +16,7 @@ import java.util.Set;
 import static org.bukkit.entity.EntityType.*;
 
 public class PeacefulMobTargetingHandler implements ConfigAwareListener {
-    private static final Set<EntityType> HOSTILE_MOBS = Sets.newHashSet(
+    private static final Set<EntityType> HOSTILE_MOBS = Set.of(
             BLAZE,
             CAVE_SPIDER,
             CREEPER,

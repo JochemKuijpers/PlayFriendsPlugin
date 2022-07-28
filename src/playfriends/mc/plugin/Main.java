@@ -1,6 +1,5 @@
 package playfriends.mc.plugin;
 
-import com.google.common.collect.Lists;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -17,18 +16,26 @@ import playfriends.mc.plugin.playerdata.PlayerDataManager;
 import java.util.List;
 import java.util.UUID;
 
+/** Main entry point for the plugin. */
+@SuppressWarnings("unused")
 public class Main extends JavaPlugin {
+    /** The list of enabled config aware event listeners. */
     private final List<ConfigAwareListener> configAwareListeners;
+
+    /** The player data manager, to manager the player. */
     private final PlayerDataManager playerDataManager;
+
+    /** The server's plugin manager to register event listeners to. */
     private PluginManager pluginManager;
 
+    /** Creates the plugin. */
     public Main() {
-        this.playerDataManager = new PlayerDataManager(this.getDataFolder(), getLogger());
-        this.configAwareListeners = Lists.newArrayList(
-                new AFKDetectionHandler(this, this.playerDataManager),
+        this.playerDataManager = new PlayerDataManager(getDataFolder(), getLogger());
+        this.configAwareListeners = List.of(
+                new AfkDetectionHandler(this, this.playerDataManager),
                 new AliasChangeHandler(this.playerDataManager),
                 new PeacefulMobTargetingHandler(this.playerDataManager),
-                new PeacefulStateHandler(this.playerDataManager),
+                new PeacefulStateHandler(this.playerDataManager, getLogger()),
                 new PlayerGreetingHandler(this.playerDataManager),
                 new SleepVotingHandler(this, this.playerDataManager)
         );
@@ -61,25 +68,23 @@ public class Main extends JavaPlugin {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         switch (command.getName()) {
-            case "chill":
-                if (!(sender instanceof Player)) {
-                    sender.sendMessage("Only players can use this command.");
-                } else {
-                    Player player = (Player) sender;
+            case "chill" -> {
+                if (sender instanceof Player player) {
                     pluginManager.callEvent(new PlayerPeacefulEvent(player, true));
-                }
-                return true;
-
-            case "thrill":
-                if (!(sender instanceof Player)) {
-                    sender.sendMessage("Only players can use this command.");
                 } else {
-                    Player player = (Player) sender;
-                    pluginManager.callEvent(new PlayerPeacefulEvent(player, false));
+                    sender.sendMessage("Only players can use this command.");
                 }
                 return true;
-
-            case "whois":
+            }
+            case "thrill" -> {
+                if (sender instanceof Player player) {
+                    pluginManager.callEvent(new PlayerPeacefulEvent(player, false));
+                } else {
+                    sender.sendMessage("Only players can use this command.");
+                }
+                return true;
+            }
+            case "whois" -> {
                 if (args.length != 1) {
                     return false;
                 }
@@ -96,32 +101,30 @@ public class Main extends JavaPlugin {
                     sender.sendMessage(MessageUtils.formatMessage(getConfig().getString("whois.player-aka-alias"), playerArgument.getDisplayName(), playerData.getAlias()));
                 }
                 return true;
-
-            case "alias":
+            }
+            case "alias" -> {
                 if (args.length == 0) {
                     return false;
                 }
-
-                if (!(sender instanceof Player)) {
-                    sender.sendMessage("Only players can use this command.");
-                } else {
-                    Player player = (Player) sender;
+                if (sender instanceof Player player) {
                     pluginManager.callEvent(new PlayerAliasEvent(player, String.join(" ", args)));
-                }
-                return true;
-
-            case "zzz":
-                if (!(sender instanceof Player)) {
-                    sender.sendMessage("Only players can use this command.");
                 } else {
-                    Player player = (Player) sender;
-                    pluginManager.callEvent(new PlayerSleepingVoteEvent(player));
+                    sender.sendMessage("Only players can use this command.");
                 }
                 return true;
-
-            default:
+            }
+            case "zzz" -> {
+                if (sender instanceof Player player) {
+                    pluginManager.callEvent(new PlayerSleepingVoteEvent(player));
+                } else {
+                    sender.sendMessage("Only players can use this command.");
+                }
+                return true;
+            }
+            default -> {
                 sender.sendMessage("I don't know a command named " + command.getName() + "!");
                 return true;
+            }
         }
     }
 }

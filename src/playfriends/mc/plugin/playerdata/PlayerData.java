@@ -1,38 +1,44 @@
 package playfriends.mc.plugin.playerdata;
 
-import com.google.common.collect.Lists;
 
-import java.util.List;
+import java.time.Clock;
+import java.time.Instant;
 import java.util.UUID;
 
 public class PlayerData {
     /** The player UUID */
+    @Persistent("uuid")
     private final UUID uuid;
 
-    /** Whether or not the data is equivalent to what is on disk. */
-    private boolean isDirty;
-
     /** Whether or not the player plays on peaceful. */
+    @Persistent("peaceful")
     private boolean peaceful;
 
     /** How many times has this person visited the server. */
+    @Persistent("times-seen")
     private long timesSeen;
 
     /** Real clock time when the player moved last (Unix milliseconds), not saved. */
-    private long lastMove;
-
-    /** Whether or not the player is considered AFK, not saved. */
-    private boolean isAfk;
+    @Persistent("last-move")
+    private Instant lastMove;
 
     /** An alias the player can register for themselves */
+    @Persistent("alias")
     private String alias;
 
-    /** The player name */
+    /** The player name. */
+    @Persistent("player-name")
     private String playerName;
+
+    /** Whether the data is equivalent to what is on disk. */
+    private boolean isDirty;
+
+    /** Whether the player is considered AFK, not saved. */
+    private boolean isAfk;
 
     public PlayerData(UUID uuid) {
         this.uuid = uuid;
-        this.lastMove = System.currentTimeMillis();
+        this.lastMove = Clock.systemUTC().instant();
     }
 
     public UUID getUUID() {
@@ -65,11 +71,11 @@ public class PlayerData {
         this.timesSeen = timesSeen;
     }
 
-    public long getLastMove() {
+    public Instant getLastMove() {
         return lastMove;
     }
 
-    public void setLastMove(long lastMove) {
+    public void setLastMove(Instant lastMove) {
         this.lastMove = lastMove;
     }
 
@@ -110,44 +116,5 @@ public class PlayerData {
     public void setPlayerName(String playerName) {
         this.isDirty = (!playerName.equals(this.playerName));
         this.playerName = playerName;
-    }
-
-    public void loadFromLines(List<String> lines) {
-        for (String line : lines) {
-            final String[] parts = line.split("=", 2);
-            String key = parts[0].trim().toLowerCase();
-            String value = parts[1].trim();
-
-            switch (key) {
-                case "peaceful":
-                case "chill":
-                    peaceful = value.toLowerCase().equals("true");
-                    break;
-                case "times-seen":
-                    try {
-                        timesSeen = Long.parseLong(value);
-                    } catch (NumberFormatException e) {
-                        timesSeen = 0;
-                    }
-                    break;
-                case "alias":
-                    alias = value.isEmpty() ? null : value;
-                    break;
-                case "player-name":
-                    playerName = value.isEmpty() ? null : value;
-                    break;
-                default:
-                    break;
-            }
-        }
-    }
-
-    public List<String> saveAsLines() {
-        return Lists.newArrayList(
-                "chill = " + (peaceful ? "true" : "false"),
-                "times-seen = " + timesSeen,
-                "alias = " + (alias == null ? "" : alias),
-                "player-name = " + (playerName == null ? "" : playerName)
-        );
     }
 }

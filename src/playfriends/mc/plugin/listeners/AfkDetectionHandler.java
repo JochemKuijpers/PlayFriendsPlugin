@@ -5,28 +5,36 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
-import org.bukkit.event.player.*;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerVelocityEvent;
 import org.bukkit.event.server.ServerLoadEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import playfriends.mc.plugin.MessageUtils;
-import playfriends.mc.plugin.events.PlayerAFKEvent;
+import playfriends.mc.plugin.events.PlayerAfkEvent;
 import playfriends.mc.plugin.playerdata.PlayerData;
 import playfriends.mc.plugin.playerdata.PlayerDataManager;
 
-public class AFKDetectionHandler implements ConfigAwareListener {
-    private static final long MILLIS_PER_MINUTE = 60_000;
-    private static final long TICKS_BETWEEN_DETECTION = 21;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
+public class AfkDetectionHandler implements ConfigAwareListener {
     private final PlayerDataManager playerDataManager;
     private final Plugin plugin;
     private final Server server;
     private final PluginManager pluginManager;
 
-    private long timeout;
+    private Duration timeout;
     private String awayMessage;
     private String backMessage;
 
-    public AFKDetectionHandler(Plugin plugin, PlayerDataManager playerDataManager) {
+    public AfkDetectionHandler(Plugin plugin, PlayerDataManager playerDataManager) {
         this.plugin = plugin;
         this.playerDataManager = playerDataManager;
         this.server = plugin.getServer();
@@ -35,37 +43,55 @@ public class AFKDetectionHandler implements ConfigAwareListener {
 
     @Override
     public void updateConfig(FileConfiguration newConfig) {
-        timeout = newConfig.getLong("afk.timeout");
+        timeout = Duration.ofSeconds(newConfig.getLong("afk.timeout-seconds"));
         awayMessage = newConfig.getString("afk.messages.away");
         backMessage = newConfig.getString("afk.messages.back");
     }
 
     @EventHandler
     public void onServerLoad(ServerLoadEvent event) {
+        AtomicInteger index = new AtomicInteger(0);
+
+        // Every server tick, run AFK detection for one player in the online player list,
+        // incrementing the index so eventually all players are AFK detected.
+        // As the server ticks at 20Hz, this should be sufficient for second-scale timeouts
+        // even on fairly busy servers.
         server.getScheduler().runTaskTimer(
                 plugin,
                 () -> {
-                    long currentTime = System.currentTimeMillis();
-                    for (Player player : server.getOnlinePlayers()) {
-                        final PlayerData data = playerDataManager.getPlayerData(player.getUniqueId());
-                        if (!data.isAfk() && !player.isSleeping() && !player.isInsideVehicle() &&
-                                data.getLastMove() < currentTime - timeout * MILLIS_PER_MINUTE) {
+                    final Collection<? extends Player> onlinePlayers = server.getOnlinePlayers();
+                    if (onlinePlayers.isEmpty()) {
+                        return; // Can't do AFK detection if there are no players
+                    }
+
+                    final Instant now = Clock.systemUTC().instant();
+                    final List<Player> players = new ArrayList<>(onlinePlayers);
+
+                    // get one arbitrary player
+                    final Player player = players.get(index.getAndIncrement() % players.size());
+                    final PlayerData data = playerDataManager.getPlayerData(player.getUniqueId());
+
+                    // AFK detection should only happen if the player is not AFK yet, isn't sleeping and not in a vehicle
+                    if (!data.isAfk() && !player.isSleeping() && !player.isInsideVehicle()) {
+                        // Check if the last movement was before (now minus the afk timeout)
+                        if (data.getLastMove().isBefore(now.minus(timeout))) {
                             data.setAfk(true);
-                            pluginManager.callEvent(new PlayerAFKEvent(player, true));
+                            pluginManager.callEvent(new PlayerAfkEvent(player, true));
                         }
                     }
                 },
-                TICKS_BETWEEN_DETECTION,
-                TICKS_BETWEEN_DETECTION
+                1,
+                1
         );
     }
 
     private void registerPlayerActivity(Player player) {
         final PlayerData data = playerDataManager.getPlayerData(player.getUniqueId());
-        data.setLastMove(System.currentTimeMillis());
+        final Instant now = Clock.systemUTC().instant();
+        data.setLastMove(now);
         if (data.isAfk()) {
             data.setAfk(false);
-            pluginManager.callEvent(new PlayerAFKEvent(player, false));
+            pluginManager.callEvent(new PlayerAfkEvent(player, false));
         }
     }
 
@@ -85,7 +111,7 @@ public class AFKDetectionHandler implements ConfigAwareListener {
     }
 
     @EventHandler
-    public void onPlayerAFK(PlayerAFKEvent event) {
+    public void onPlayerAFK(PlayerAfkEvent event) {
         if (event.isAfk()) {
             event.getPlayer().sendMessage(MessageUtils.formatMessage(awayMessage));
         } else {

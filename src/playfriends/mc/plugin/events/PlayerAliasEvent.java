@@ -4,11 +4,15 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
+/** An event signaling the potential change of a player's alias. */
 public class PlayerAliasEvent extends Event {
     private static final HandlerList HANDLERS_LIST = new HandlerList();
 
+    /** The player. */
     private final Player player;
-    private String newAlias;
+
+    /** Their new alias. */
+    private final String newAlias;
 
     public PlayerAliasEvent(Player player, String newAlias) {
         this.player = player;
@@ -21,10 +25,6 @@ public class PlayerAliasEvent extends Event {
 
     public String getNewAlias() {
         return newAlias;
-    }
-
-    public void setNewAlias(String newAlias) {
-        this.newAlias = newAlias;
     }
 
     @Override

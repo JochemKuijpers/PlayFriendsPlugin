@@ -7,15 +7,20 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.ScoreboardManager;
 import org.bukkit.scoreboard.Team;
 import playfriends.mc.plugin.MessageUtils;
-import playfriends.mc.plugin.events.PlayerAFKEvent;
+import playfriends.mc.plugin.events.PlayerAfkEvent;
 import playfriends.mc.plugin.events.PlayerPeacefulEvent;
 import playfriends.mc.plugin.playerdata.PlayerData;
 import playfriends.mc.plugin.playerdata.PlayerDataManager;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class PeacefulStateHandler implements ConfigAwareListener {
     private final PlayerDataManager playerDataManager;
+    private final Logger logger;
 
     private Team chillTeam;
     private Team thrillTeam;
@@ -28,8 +33,9 @@ public class PeacefulStateHandler implements ConfigAwareListener {
 
     private boolean isPeacefulByDefault;
 
-    public PeacefulStateHandler(PlayerDataManager playerDataManager) {
+    public PeacefulStateHandler(PlayerDataManager playerDataManager, Logger logger) {
         this.playerDataManager = playerDataManager;
+        this.logger = logger;
     }
 
     @Override
@@ -43,7 +49,13 @@ public class PeacefulStateHandler implements ConfigAwareListener {
     }
 
     private void assertTeamsAreSet(Server server) {
-        final Scoreboard scoreboard = server.getScoreboardManager().getMainScoreboard();
+        final ScoreboardManager scoreboardManager = server.getScoreboardManager();
+        if (scoreboardManager == null) {
+            logger.log(Level.SEVERE, "Cannot set teams because the scoreboard manager is null.");
+            return;
+        }
+
+        final Scoreboard scoreboard = scoreboardManager.getMainScoreboard();
 
         chillTeam = scoreboard.getTeam("ChillTeam");
         thrillTeam = scoreboard.getTeam("ThrillTeam");
@@ -87,7 +99,7 @@ public class PeacefulStateHandler implements ConfigAwareListener {
     }
 
     @EventHandler
-    public void onPlayerAFK(PlayerAFKEvent event) {
+    public void onPlayerAFK(PlayerAfkEvent event) {
         final Player player = event.getPlayer();
         final PlayerData playerData = playerDataManager.getPlayerData(player.getUniqueId());
 

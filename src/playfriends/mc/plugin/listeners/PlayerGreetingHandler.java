@@ -18,7 +18,6 @@ public class PlayerGreetingHandler implements ConfigAwareListener {
     private final List<String> greetingStrings;
     private final PlayerDataManager playerDataManager;
 
-
     private String firstJoinMessage;
     private String nthJoinMessage;
     private String quitMessage;

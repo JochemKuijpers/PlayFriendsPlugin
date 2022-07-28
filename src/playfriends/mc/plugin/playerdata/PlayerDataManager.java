@@ -1,9 +1,14 @@
 package playfriends.mc.plugin.playerdata;
 
-import java.io.*;
+import playfriends.mc.plugin.playerdata.serialization.Serializers;
+
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -84,9 +89,9 @@ public class PlayerDataManager {
 
         final String filename = dataFolder.getPath() + "/" + playerData.getUUID().toString() + "." + FILENAME_EXT;
         try {
-            Files.write(Paths.get(filename), playerData.saveAsLines());
+            Files.writeString(Paths.get(filename), Serializers.serialize(playerData));
             playerData.resetDirty();
-        } catch (IOException e) {
+        } catch (IOException | IllegalAccessException e) {
             logger.log(Level.SEVERE, String.format(LOG_COULD_NOT_SAVE, filename, e.getMessage()));
         }
     }
@@ -94,7 +99,7 @@ public class PlayerDataManager {
     public void loadAll() {
         if (!backedByFileSystem) { return; }
 
-        final Pattern pattern = Pattern.compile("([0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{12}\\." + FILENAME_EXT + ")");
+        final Pattern pattern = Pattern.compile("([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\\." + FILENAME_EXT + ")");
         final File[] fileNames = dataFolder.listFiles((dir, name) -> pattern.matcher(name).find());
         if (fileNames == null) {
             logger.log(Level.SEVERE, LOG_FILESYSTEM_ERROR);
@@ -104,8 +109,6 @@ public class PlayerDataManager {
         long numFiles = 0;
         long numSuccess = 0;
 
-        final List<String> lines = new ArrayList<>();
-
         synchronized (dataByUUID) {
             for (File dataFile : fileNames) {
                 numFiles += 1;
@@ -114,21 +117,10 @@ public class PlayerDataManager {
 
                 try {
                     final UUID playerUUID = UUID.fromString(fileUUID);
+                    final PlayerData playerData = dataByUUID.computeIfAbsent(playerUUID, PlayerData::new);
+                    Serializers.deserialize(Files.readString(dataFile.toPath()), playerData);
 
-                    lines.clear();
-
-                    try (BufferedReader reader =
-                                 new BufferedReader(new InputStreamReader(new FileInputStream(dataFile)))) {
-                        String line;
-                        while ((line = reader.readLine()) != null) {
-                            lines.add(line);
-                        }
-
-                        final PlayerData playerData = dataByUUID.computeIfAbsent(playerUUID, PlayerData::new);
-                        playerData.loadFromLines(lines);
-
-                        numSuccess += 1;
-                    }
+                    numSuccess += 1;
                 } catch (Exception ignored) {
                     // logged below
                 }

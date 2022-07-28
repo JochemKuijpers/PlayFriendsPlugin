@@ -4,16 +4,20 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
+/** An event signaling the potential change of a player's peaceful status. */
 public class PlayerPeacefulEvent extends Event {
     private static final HandlerList HANDLERS_LIST = new HandlerList();
+
+    /** The player. */
+    private final Player player;
+
+    /** Their peaceful status. */
+    private final boolean peaceful;
 
     public PlayerPeacefulEvent(Player player, boolean peaceful) {
         this.peaceful = peaceful;
         this.player = player;
     }
-
-    private boolean peaceful;
-    private Player player;
 
     public Player getPlayer() {
         return player;
@@ -21,10 +25,6 @@ public class PlayerPeacefulEvent extends Event {
 
     public boolean isPeaceful() {
         return peaceful;
-    }
-
-    public void setPeaceful(boolean peaceful) {
-        this.peaceful = peaceful;
     }
 
     @Override

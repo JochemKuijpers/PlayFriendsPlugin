@@ -1,17 +1,19 @@
 package playfriends.mc.plugin.events;
 
 import org.bukkit.entity.Player;
-import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
-public class PlayerAFKEvent extends Event {
+/** Event signaling the potential change of the AFK status of a player. */
+public class PlayerAfkEvent extends Event {
     private static final HandlerList HANDLERS_LIST = new HandlerList();
 
+    /** The player. */
     private final Player player;
-    private boolean afk;
+    /** Its AFK status. */
+    private final boolean afk;
 
-    public PlayerAFKEvent(Player player, boolean afk) {
+    public PlayerAfkEvent(Player player, boolean afk) {
         this.player = player;
         this.afk = afk;
     }

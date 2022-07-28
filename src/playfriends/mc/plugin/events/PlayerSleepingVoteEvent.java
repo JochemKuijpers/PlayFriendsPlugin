@@ -4,9 +4,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
+/** An event signaling a player's vote to sleep. */
 public class PlayerSleepingVoteEvent extends Event {
     private static final HandlerList HANDLERS_LIST = new HandlerList();
 
+    /** The player. */
     private final Player player;
 
     public PlayerSleepingVoteEvent(Player player) {

@@ -40,7 +40,7 @@ sleepvoting:
     vote-by-command-not-allowed: "&cAt least one person must sleep in a bed to start sleep voting."
 
 afk:
-  timeout: 1
+  timeout-seconds: 60
   messages:
     away: "&7AFK detection: You are inactive."
     back: "&7AFK detection: Welcome back!"

@@ -9,7 +9,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.player.*;
 import org.bukkit.plugin.Plugin;
 import playfriends.mc.plugin.MessageUtils;
-import playfriends.mc.plugin.events.PlayerAFKEvent;
+import playfriends.mc.plugin.events.PlayerAfkEvent;
 import playfriends.mc.plugin.events.PlayerSleepingVoteEvent;
 import playfriends.mc.plugin.playerdata.PlayerData;
 import playfriends.mc.plugin.playerdata.PlayerDataManager;
@@ -28,16 +28,22 @@ public class SleepVotingHandler implements ConfigAwareListener {
 
     private static class VoteState {
         final Set<Player> sleepingPlayers;
-        /** whether or not the vote is currently active */
+
+        /** whether the vote is currently active */
         boolean isActive;
-        /** whether or not the vote was a success */
+        /** whether the vote was a success */
         boolean success;
+
+        /** The last communicated sleep count. */
         int communicatedSleepCount;
+        /** The last communicated threshold. */
         int communicatedThreshold;
+
         VoteState() {
             sleepingPlayers = new HashSet<>();
             reset();
         }
+
         void reset() {
             sleepingPlayers.clear();
             isActive = false;
@@ -47,6 +53,7 @@ public class SleepVotingHandler implements ConfigAwareListener {
         }
     }
 
+    /** A world -> vote state mapping, so every world can track its own sleepvote */
     private final Map<World, VoteState> voteStateForWorld;
 
     private int sleepThresholdConstant;
@@ -124,7 +131,7 @@ public class SleepVotingHandler implements ConfigAwareListener {
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
-    public void onPlayerAfk(PlayerAFKEvent event) {
+    public void onPlayerAfk(PlayerAfkEvent event) {
         final Player player = event.getPlayer();
         final World world = player.getWorld();
 
@@ -247,7 +254,7 @@ public class SleepVotingHandler implements ConfigAwareListener {
     }
 
     private int getThreshold(int numPlayers) {
-        final int threshold = Math.max(sleepThresholdConstant, (sleepThresholdFactor * numPlayers) / 100);
+        final int threshold = Math.max(1, Math.max(sleepThresholdConstant, (sleepThresholdFactor * numPlayers) / 100));
         return Math.min(threshold, numPlayers);
     }
 
