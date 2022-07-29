@@ -1,8 +1,8 @@
 name: "PlayFriendsPlugin"
-version: "0.6"
+version: "0.7"
 author: "Jochem Kuijpers"
 main: "playfriends.mc.plugin.Main"
-api-version: "1.16"
+api-version: "1.19"
 commands:
   chill:
     description: "Chill mode: monsters can't attack you, and you can't attack them. Opposite of /thrill."
@@ -10,12 +10,6 @@ commands:
   thrill:
     description: "Thrill mode: monsters can attack you, and you can attack them! Opposite of /chill."
     usage: "Usage: /thrill"
-  whois:
-    description: "Check if a player has set an alias, and display it."
-    usage: "Usage: /whois <player>"
-  alias:
-    description: "Set an alias for yourself, or remove it."
-    usage: "Usage: /alias [new alias]"
   zzz:
     description: "Vote for skipping the night without having to sleep in a bed."
     usage: "Usage: /zzz"
