@@ -234,8 +234,8 @@ public class SleepVotingHandler implements ConfigAwareListener {
     }
 
     private void skipNightInWorld(World world, Server server, VoteState voteState) {
-        long currentTime = world.getFullTime();
-        long wakeupTime = ((currentTime / 24000) + 1) * 24000 + WAKEUP_TIME;
+        final long currentTime = world.getFullTime();
+        final long wakeupTime = ((currentTime / 24000) + 1) * 24000 + WAKEUP_TIME;
 
         server.broadcastMessage(MessageUtils.formatMessage(successMessage));
         voteState.isActive = false;
@@ -244,7 +244,16 @@ public class SleepVotingHandler implements ConfigAwareListener {
         server.getScheduler().runTaskLater(plugin,
                 () -> {
                     voteState.reset();
-                    world.setThundering(false);
+
+                    // Only clear weather when it's not clear weather,
+                    // so we don't reset the weather cycle if it was already clear weather.
+                    if (world.isThundering()) {
+                        world.setThundering(false);
+                    }
+                    if (!world.isClearWeather()) {
+                        world.setStorm(false);
+                    }
+
                     if (canSleep(world) && world.getFullTime() < wakeupTime) {
                         world.setFullTime(wakeupTime);
                     }
