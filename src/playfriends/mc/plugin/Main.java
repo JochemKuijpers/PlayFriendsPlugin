@@ -30,7 +30,6 @@ public class Main extends JavaPlugin {
         this.playerDataManager = new PlayerDataManager(getDataFolder(), getLogger());
         this.configAwareListeners = List.of(
                 new AfkDetectionHandler(this, this.playerDataManager),
-                new AliasChangeHandler(this.playerDataManager),
                 new PeacefulMobTargetingHandler(this.playerDataManager),
                 new PeacefulStateHandler(this.playerDataManager, getLogger()),
                 new PlayerGreetingHandler(this.playerDataManager),
