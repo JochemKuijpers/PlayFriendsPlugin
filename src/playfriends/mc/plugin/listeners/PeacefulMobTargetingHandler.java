@@ -15,7 +15,17 @@ import java.util.Set;
 
 import static org.bukkit.entity.EntityType.*;
 
+/**
+ * This handler prevents hostile mobs from targeting peaceful players, and simultaneously,
+ * prevents peaceful players from harming these mobs.
+ * <p>
+ * Because players can switch to peaceful mode at any time, some mobs may still be hostile
+ * towards these players. It would be unfair to block attacks from players to hostile mobs
+ * that target them, so in this edge-case, damaging hostile mobs is still allowed by
+ * peaceful players.
+ */
 public class PeacefulMobTargetingHandler implements ConfigAwareListener {
+    /** The set of mobs considered hostile, whose targeting of chill players should be avoided. */
     private static final Set<EntityType> HOSTILE_MOBS = Set.of(
             BLAZE,
             CAVE_SPIDER,
@@ -35,6 +45,7 @@ public class PeacefulMobTargetingHandler implements ConfigAwareListener {
             MAGMA_CUBE,
             PHANTOM,
             PIGLIN,
+            PIGLIN_BRUTE,
             PILLAGER,
             RAVAGER,
             SHULKER,
@@ -46,6 +57,7 @@ public class PeacefulMobTargetingHandler implements ConfigAwareListener {
             STRIDER,
             VEX,
             VINDICATOR,
+            WARDEN,
             WITCH,
             WITHER,
             WITHER_SKELETON,
@@ -95,7 +107,7 @@ public class PeacefulMobTargetingHandler implements ConfigAwareListener {
         final Entity entity = event.getEntity();
         if (!HOSTILE_MOBS.contains(entity.getType())) { return; }
 
-        Entity damager = event.getDamager();
+        final Entity damager = event.getDamager();
         ProjectileSource source = null;
 
         if (damager instanceof Projectile) {
