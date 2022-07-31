@@ -7,10 +7,12 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
+import playfriends.mc.plugin.events.PlayerAfkToggleEvent;
 import playfriends.mc.plugin.events.PlayerPeacefulEvent;
 import playfriends.mc.plugin.events.PlayerSleepingVoteEvent;
 import playfriends.mc.plugin.listeners.*;
 import playfriends.mc.plugin.playerdata.PlayerDataManager;
+import playfriends.mc.plugin.tasks.AfkDetectionTask;
 import playfriends.mc.plugin.tasks.SavePlayerDataTask;
 import playfriends.mc.plugin.tasks.ScheduledTask;
 import playfriends.mc.plugin.tasks.TrackServerPerformanceTask;
@@ -39,16 +41,17 @@ public class Main extends JavaPlugin {
     public Main() {
         this.playerDataManager = new PlayerDataManager(getDataFolder(), getLogger());
         this.configAwareListeners = List.of(
-                new AfkDetectionHandler(this, this.playerDataManager),
-                new PeacefulMobTargetingHandler(this.playerDataManager),
-                new PeacefulStateHandler(this.playerDataManager, getLogger()),
-                new PlayerGreetingHandler(this.playerDataManager),
-                new SleepVotingHandler(this, this.playerDataManager)
+                new AfkDetectionHandler(this, playerDataManager),
+                new PeacefulMobTargetingHandler(playerDataManager),
+                new PeacefulStateHandler(playerDataManager, getLogger()),
+                new PlayerGreetingHandler(playerDataManager),
+                new SleepVotingHandler(this, playerDataManager)
         );
 
         performanceMonitor = new TrackServerPerformanceTask();
         this.scheduledTasks = List.of(
                 new SavePlayerDataTask(playerDataManager),
+                new AfkDetectionTask(this, playerDataManager),
                 performanceMonitor
         );
     }
@@ -73,6 +76,7 @@ public class Main extends JavaPlugin {
 
         final BukkitScheduler scheduler = getServer().getScheduler();
         for (ScheduledTask scheduledTask : scheduledTasks) {
+            scheduledTask.updateConfig(config);
             scheduler.runTaskTimer(this, scheduledTask, scheduledTask.getInitialDelayInTicks(), scheduledTask.getIntervalInTicks());
         }
 
@@ -99,6 +103,13 @@ public class Main extends JavaPlugin {
             case "zzz" -> {
                 if (sender instanceof Player player) {
                     pluginManager.callEvent(new PlayerSleepingVoteEvent(player));
+                } else {
+                    sender.sendMessage("Only players can use this command.");
+                }
+            }
+            case "afktoggle" -> {
+                if (sender instanceof Player player) {
+                    pluginManager.callEvent(new PlayerAfkToggleEvent(player));
                 } else {
                     sender.sendMessage("Only players can use this command.");
                 }

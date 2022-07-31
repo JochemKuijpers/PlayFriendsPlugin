@@ -1,7 +1,9 @@
 package playfriends.mc.plugin.tasks;
 
+import playfriends.mc.plugin.ConfigAware;
+
 /** A task that's executed with some initial delay and interval. */
-public interface ScheduledTask extends Runnable {
+public interface ScheduledTask extends Runnable, ConfigAware {
 
 	/** Returns the initial delay of the scheduled task in number of ticks. */
 	default int getInitialDelayInTicks() {

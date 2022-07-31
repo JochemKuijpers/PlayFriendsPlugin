@@ -25,6 +25,8 @@ public class PlayerGreetingHandler implements ConfigAwareListener {
 
     private String peacefulEnabledGreeting;
     private String peacefulDisabledGreeting;
+    private String afkDetectionEnabledGreeting;
+    private String afkDetectionDisabledGreeting;
 
     public PlayerGreetingHandler(PlayerDataManager playerDataManager) {
         this.greetingStrings = new ArrayList<>();
@@ -42,6 +44,9 @@ public class PlayerGreetingHandler implements ConfigAwareListener {
 
         peacefulEnabledGreeting = newConfig.getString("peaceful.greeting.enabled");
         peacefulDisabledGreeting = newConfig.getString("peaceful.greeting.disabled");
+
+        afkDetectionEnabledGreeting = newConfig.getString("afk.greeting.enabled");
+        afkDetectionDisabledGreeting = newConfig.getString("afk.greeting.disabled");
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -63,9 +68,16 @@ public class PlayerGreetingHandler implements ConfigAwareListener {
 
         // tell them about their peaceful status
         if (playerData.isPeaceful()) {
-            player.sendMessage(MessageUtils.formatMessageWithPlayerName(peacefulEnabledGreeting, name));
+            player.sendMessage(MessageUtils.formatMessage(peacefulEnabledGreeting));
         } else {
-            player.sendMessage(MessageUtils.formatMessageWithPlayerName(peacefulDisabledGreeting, name));
+            player.sendMessage(MessageUtils.formatMessage(peacefulDisabledGreeting));
+        }
+
+        // tell them about their AFK status
+        if (playerData.isAfkEnabled()) {
+            player.sendMessage(MessageUtils.formatMessage(afkDetectionEnabledGreeting));
+        } else {
+            player.sendMessage(MessageUtils.formatMessage(afkDetectionDisabledGreeting));
         }
     }
 

@@ -10,7 +10,7 @@ public class PlayerData {
     @Persistent("uuid")
     private final UUID uuid;
 
-    /** Whether or not the player plays on peaceful. */
+    /** Whether the player plays on peaceful. */
     @Persistent("peaceful")
     private boolean peaceful;
 
@@ -25,6 +25,10 @@ public class PlayerData {
     /** The player name. */
     @Persistent("player-name")
     private String playerName;
+
+    /** Whether the player has AFK detection enabled. */
+    @Persistent("afk-enabled")
+    private boolean isAfkEnabled;
 
     /** Whether the data is equivalent to what is on disk. */
     private boolean isDirty;
@@ -57,6 +61,10 @@ public class PlayerData {
         return playerName;
     }
 
+    public boolean isAfkEnabled() {
+        return isAfkEnabled;
+    }
+
     public boolean isDirty() {
         return isDirty;
     }
@@ -87,6 +95,11 @@ public class PlayerData {
     public void setPlayerName(String playerName) {
         isDirty = isDirty || (!playerName.equals(this.playerName));
         this.playerName = playerName;
+    }
+
+    public void setAfkEnabled(boolean afkEnabled) {
+        isDirty = isDirty || (this.isAfkEnabled != afkEnabled);
+        this.isAfkEnabled = afkEnabled;
     }
 
     public void setAfk(boolean afk) {

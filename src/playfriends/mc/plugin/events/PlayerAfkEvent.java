@@ -10,6 +10,7 @@ public class PlayerAfkEvent extends Event {
 
     /** The player. */
     private final Player player;
+
     /** Its AFK status. */
     private final boolean afk;
 

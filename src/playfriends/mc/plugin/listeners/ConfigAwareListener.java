@@ -1,8 +1,7 @@
 package playfriends.mc.plugin.listeners;
 
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.Listener;
+import playfriends.mc.plugin.ConfigAware;
 
-public interface ConfigAwareListener extends Listener {
-    void updateConfig(FileConfiguration newConfig);
+public interface ConfigAwareListener extends Listener, ConfigAware {
 }

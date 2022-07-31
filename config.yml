@@ -41,9 +41,14 @@ sleepvoting:
 
 afk:
   timeout-seconds: 60
+  greeting:
+    enabled: "&7AFK detection is enabled. See &e/help afktoggle&7."
+    disabled: "&7AFK detection is disabled. See &e/help afktoggle&7."
   messages:
     away: "&7AFK detection: You are inactive."
     back: "&7AFK detection: Welcome back!"
+    enabled: "&7AFK detection is now enabled."
+    disabled: "&7AFK detection is now disabled."
 
 whois:
   not-found: "&cThis player does not exist."

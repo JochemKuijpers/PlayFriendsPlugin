@@ -1,5 +1,5 @@
 name: "PlayFriendsPlugin"
-version: "0.8"
+version: "0.9"
 author: "Jochem Kuijpers"
 main: "playfriends.mc.plugin.Main"
 api-version: "1.19"
@@ -16,3 +16,6 @@ commands:
   perf:
     description: "Check the server's performance."
     usage: "Usage: /perf"
+  afktoggle:
+    description: "Toggle AFK detection."
+    usage: "Usage /afktoggle"
