@@ -29,3 +29,9 @@ dependencies {
 jar {
     destinationDirectory.set(file("SpigotServer/Plugins"))
 }
+
+task moveConfig(type: Copy) {
+    from "src/main/resources"
+    into "SpigotServer/plugins/PlayFriendsPlugin"
+    include "config.yml"
+}

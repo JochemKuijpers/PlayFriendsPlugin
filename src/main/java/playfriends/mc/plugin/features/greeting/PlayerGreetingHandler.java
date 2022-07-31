@@ -1,5 +1,6 @@
 package playfriends.mc.plugin.features.greeting;
 
+import net.md_5.bungee.chat.ComponentSerializer;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -14,6 +15,7 @@ import playfriends.mc.plugin.playerdata.PlayerDataManager;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class PlayerGreetingHandler implements ConfigAwareListener {
     private final List<String> greetingStrings;
@@ -28,6 +30,10 @@ public class PlayerGreetingHandler implements ConfigAwareListener {
     private String peacefulDisabledGreeting;
     private String afkDetectionEnabledGreeting;
     private String afkDetectionDisabledGreeting;
+    private String pronounsMissingGreeting;
+    private String pronounsPresentGreeting;
+    private String discordMissingGreeting;
+    private String discordPresentGreeting;
 
     public PlayerGreetingHandler(PlayerDataManager playerDataManager) {
         this.greetingStrings = new ArrayList<>();
@@ -48,6 +54,10 @@ public class PlayerGreetingHandler implements ConfigAwareListener {
 
         afkDetectionEnabledGreeting = newConfig.getString("afk.greeting.enabled");
         afkDetectionDisabledGreeting = newConfig.getString("afk.greeting.disabled");
+        pronounsMissingGreeting = newConfig.getString("playerprofile.greeting.no-pronouns");
+        pronounsPresentGreeting = newConfig.getString("playerprofile.greeting.pronouns");
+        discordMissingGreeting = newConfig.getString("playerprofile.greeting.no-discord");
+        discordPresentGreeting = newConfig.getString("playerprofile.greeting.discord");
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -79,6 +89,24 @@ public class PlayerGreetingHandler implements ConfigAwareListener {
             player.sendMessage(MessageUtils.formatMessage(afkDetectionEnabledGreeting));
         } else {
             player.sendMessage(MessageUtils.formatMessage(afkDetectionDisabledGreeting));
+        }
+
+        // Tell them to configure their pronouns & discord username
+        if (playerData.getPronouns() == null) {
+            player.sendMessage(pronounsMissingGreeting);
+        } else {
+            player.sendMessage(MessageUtils.formatMessageWithPlaceholder(
+                pronounsPresentGreeting,
+                "{{PRONOUNS}}", playerData.getPronouns()
+            ));
+        }
+        if (playerData.getDiscordName() == null) {
+            player.sendMessage(discordMissingGreeting);
+        } else {
+            player.sendMessage(MessageUtils.formatMessageWithPlaceholder(discordPresentGreeting,
+                "{{DISCORD}}",
+                playerData.getDiscordName()
+            ));
         }
     }
 

@@ -24,6 +24,10 @@ import playfriends.mc.plugin.features.perf.PerformanceEvent;
 import playfriends.mc.plugin.features.perf.PerformanceHandler;
 import playfriends.mc.plugin.features.perf.PerformanceMonitor;
 import playfriends.mc.plugin.features.perf.PerformanceMonitorTask;
+import playfriends.mc.plugin.features.playerprofile.ListPlayersEvent;
+import playfriends.mc.plugin.features.playerprofile.SetDiscordEvent;
+import playfriends.mc.plugin.features.playerprofile.SetPronounsEvent;
+import playfriends.mc.plugin.features.playerprofile.PlayerProfileHandler;
 import playfriends.mc.plugin.features.sleepvoting.SleepVotingHandler;
 import playfriends.mc.plugin.features.sleepvoting.SleepingVotePlayerEvent;
 import playfriends.mc.plugin.playerdata.KeepInventoryRule;
@@ -67,7 +71,8 @@ public class Main extends JavaPlugin {
                 new PlayerGreetingHandler(playerDataManager),
                 new SleepVotingHandler(this, playerDataManager),
                 new PerformanceHandler(this.monitor),
-                new KeepInventoryHandler(playerDataManager)
+                new KeepInventoryHandler(playerDataManager),
+                new PlayerProfileHandler(this, playerDataManager)
         );
 
         this.scheduledTasks = List.of(
@@ -166,6 +171,27 @@ public class Main extends JavaPlugin {
                 }
             }
             case "perf" -> pluginManager.callEvent(new PerformanceEvent(sender));
+            case "pronouns" -> {
+                if (sender instanceof Player player) {
+                    pluginManager.callEvent(new SetPronounsEvent(player, String.join(" ",args)));
+                } else {
+                    sender.sendMessage("Only players can use this command.");
+                }
+            }
+            case "discord" -> {
+                if (sender instanceof Player player) {
+                    pluginManager.callEvent(new SetDiscordEvent(player, String.join(" ",args)));
+                } else {
+                    sender.sendMessage("Only players can use this command.");
+                }
+            }
+            case "list" -> {
+                if (sender instanceof Player player) {
+                    pluginManager.callEvent(new ListPlayersEvent(player));
+                } else {
+                    sender.sendMessage("Only players can use this command.");
+                }
+            }
             default     -> {
                 sender.sendMessage(ChatColor.RED + "I don't know a command named " + command.getName() + "!");
                 return false;
