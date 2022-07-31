@@ -1,5 +1,5 @@
 name: "PlayFriendsPlugin"
-version: "0.7"
+version: "0.8"
 author: "Jochem Kuijpers"
 main: "playfriends.mc.plugin.Main"
 api-version: "1.19"
@@ -13,3 +13,6 @@ commands:
   zzz:
     description: "Vote for skipping the night without having to sleep in a bed."
     usage: "Usage: /zzz"
+  perf:
+    description: "Check the server's performance."
+    usage: "Usage: /perf"

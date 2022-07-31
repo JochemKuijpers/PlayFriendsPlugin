@@ -6,10 +6,14 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitScheduler;
 import playfriends.mc.plugin.events.PlayerPeacefulEvent;
 import playfriends.mc.plugin.events.PlayerSleepingVoteEvent;
 import playfriends.mc.plugin.listeners.*;
 import playfriends.mc.plugin.playerdata.PlayerDataManager;
+import playfriends.mc.plugin.tasks.SavePlayerDataTask;
+import playfriends.mc.plugin.tasks.ScheduledTask;
+import playfriends.mc.plugin.tasks.TrackServerPerformanceTask;
 
 import java.util.List;
 
@@ -19,11 +23,17 @@ public class Main extends JavaPlugin {
     /** The list of enabled config aware event listeners. */
     private final List<ConfigAwareListener> configAwareListeners;
 
+    /** The list of scheduled tasks. */
+    private final List<ScheduledTask> scheduledTasks;
+
     /** The player data manager, to manager the player. */
     private final PlayerDataManager playerDataManager;
 
     /** The server's plugin manager to register event listeners to. */
     private PluginManager pluginManager;
+
+    /** The server performance task, for sending performance metrics. */
+    private final TrackServerPerformanceTask performanceMonitor;
 
     /** Creates the plugin. */
     public Main() {
@@ -34,6 +44,12 @@ public class Main extends JavaPlugin {
                 new PeacefulStateHandler(this.playerDataManager, getLogger()),
                 new PlayerGreetingHandler(this.playerDataManager),
                 new SleepVotingHandler(this, this.playerDataManager)
+        );
+
+        performanceMonitor = new TrackServerPerformanceTask();
+        this.scheduledTasks = List.of(
+                new SavePlayerDataTask(playerDataManager),
+                performanceMonitor
         );
     }
 
@@ -55,8 +71,10 @@ public class Main extends JavaPlugin {
             pluginManager.registerEvents(configAwareListener, this);
         }
 
-        // schedule to save all player data once every hour.
-        getServer().getScheduler().runTaskTimer(this, playerDataManager::saveAll, 20*3600, 20*3600);
+        final BukkitScheduler scheduler = getServer().getScheduler();
+        for (ScheduledTask scheduledTask : scheduledTasks) {
+            scheduler.runTaskTimer(this, scheduledTask, scheduledTask.getInitialDelayInTicks(), scheduledTask.getIntervalInTicks());
+        }
 
         playerDataManager.loadAll();
     }
@@ -70,7 +88,6 @@ public class Main extends JavaPlugin {
                 } else {
                     sender.sendMessage("Only players can use this command.");
                 }
-                return true;
             }
             case "thrill" -> {
                 if (sender instanceof Player player) {
@@ -78,7 +95,6 @@ public class Main extends JavaPlugin {
                 } else {
                     sender.sendMessage("Only players can use this command.");
                 }
-                return true;
             }
             case "zzz" -> {
                 if (sender instanceof Player player) {
@@ -86,12 +102,10 @@ public class Main extends JavaPlugin {
                 } else {
                     sender.sendMessage("Only players can use this command.");
                 }
-                return true;
             }
-            default -> {
-                sender.sendMessage("I don't know a command named " + command.getName() + "!");
-                return true;
-            }
+            case "perf" -> performanceMonitor.sendTickStats(sender);
+            default     -> sender.sendMessage("I don't know a command named " + command.getName() + "!");
         }
+        return true;
     }
 }
