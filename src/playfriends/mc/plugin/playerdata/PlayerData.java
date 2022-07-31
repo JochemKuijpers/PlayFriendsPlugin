@@ -28,7 +28,7 @@ public class PlayerData {
 
     /** Whether the player has AFK detection enabled. */
     @Persistent("afk-enabled")
-    private boolean isAfkEnabled;
+    private boolean isAfkEnabled = true;
 
     /** Whether the data is equivalent to what is on disk. */
     private boolean isDirty;
