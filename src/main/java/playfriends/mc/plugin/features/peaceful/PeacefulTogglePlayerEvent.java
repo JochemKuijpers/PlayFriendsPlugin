@@ -1,26 +1,19 @@
-package playfriends.mc.plugin.events;
+package playfriends.mc.plugin.features.peaceful;
 
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
+import playfriends.mc.plugin.api.PlayerEvent;
 
 /** An event signaling the potential change of a player's peaceful status. */
-public class PlayerPeacefulEvent extends Event {
+public class PeacefulTogglePlayerEvent extends PlayerEvent {
     private static final HandlerList HANDLERS_LIST = new HandlerList();
 
-    /** The player. */
-    private final Player player;
-
-    /** Their peaceful status. */
+    /** The player's peaceful status. */
     private final boolean peaceful;
 
-    public PlayerPeacefulEvent(Player player, boolean peaceful) {
+    public PeacefulTogglePlayerEvent(Player player, boolean peaceful) {
+        super(player);
         this.peaceful = peaceful;
-        this.player = player;
-    }
-
-    public Player getPlayer() {
-        return player;
     }
 
     public boolean isPeaceful() {

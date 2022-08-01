@@ -1,22 +1,15 @@
-package playfriends.mc.plugin.events;
+package playfriends.mc.plugin.features.afkdetection;
 
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
+import playfriends.mc.plugin.api.PlayerEvent;
 
 /** Event signaling a player toggling their AFK detection status. */
-public class PlayerAfkToggleEvent extends Event {
+public class AfkTogglePlayerEvent extends PlayerEvent {
 	private static final HandlerList HANDLERS_LIST = new HandlerList();
 
-	/** The player. */
-	private final Player player;
-
-	public PlayerAfkToggleEvent(Player player) {
-		this.player = player;
-	}
-
-	public Player getPlayer() {
-		return player;
+	public AfkTogglePlayerEvent(Player player) {
+		super(player);
 	}
 
 	@Override

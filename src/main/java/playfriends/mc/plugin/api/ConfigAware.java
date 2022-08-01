@@ -1,4 +1,4 @@
-package playfriends.mc.plugin;
+package playfriends.mc.plugin.api;
 
 import org.bukkit.configuration.file.FileConfiguration;
 

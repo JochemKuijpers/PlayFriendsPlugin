@@ -1,4 +1,4 @@
-package playfriends.mc.plugin.listeners;
+package playfriends.mc.plugin.features.peaceful;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Server;
@@ -10,8 +10,8 @@ import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.ScoreboardManager;
 import org.bukkit.scoreboard.Team;
 import playfriends.mc.plugin.MessageUtils;
-import playfriends.mc.plugin.events.PlayerAfkEvent;
-import playfriends.mc.plugin.events.PlayerPeacefulEvent;
+import playfriends.mc.plugin.api.ConfigAwareListener;
+import playfriends.mc.plugin.features.afkdetection.AfkPlayerEvent;
 import playfriends.mc.plugin.playerdata.PlayerData;
 import playfriends.mc.plugin.playerdata.PlayerDataManager;
 
@@ -99,7 +99,7 @@ public class PeacefulStateHandler implements ConfigAwareListener {
     }
 
     @EventHandler
-    public void onPlayerAFK(PlayerAfkEvent event) {
+    public void onPlayerAFK(AfkPlayerEvent event) {
         final Player player = event.getPlayer();
         final PlayerData playerData = playerDataManager.getPlayerData(player.getUniqueId());
 
@@ -120,7 +120,7 @@ public class PeacefulStateHandler implements ConfigAwareListener {
     }
 
     @EventHandler
-    public void onPlayerPeaceful(PlayerPeacefulEvent event) {
+    public void onPlayerPeaceful(PeacefulTogglePlayerEvent event) {
         final Player player = event.getPlayer();
         final String name = player.getDisplayName();
         final PlayerData playerData = playerDataManager.getPlayerData(player.getUniqueId());

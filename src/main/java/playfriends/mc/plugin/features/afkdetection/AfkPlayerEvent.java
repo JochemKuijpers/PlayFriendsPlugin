@@ -1,26 +1,19 @@
-package playfriends.mc.plugin.events;
+package playfriends.mc.plugin.features.afkdetection;
 
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
+import playfriends.mc.plugin.api.PlayerEvent;
 
 /** Event signaling the potential change of the AFK status of a player. */
-public class PlayerAfkEvent extends Event {
+public class AfkPlayerEvent extends PlayerEvent {
     private static final HandlerList HANDLERS_LIST = new HandlerList();
-
-    /** The player. */
-    private final Player player;
 
     /** Its AFK status. */
     private final boolean afk;
 
-    public PlayerAfkEvent(Player player, boolean afk) {
-        this.player = player;
+    public AfkPlayerEvent(Player player, boolean afk) {
+        super(player);
         this.afk = afk;
-    }
-
-    public Player getPlayer() {
-        return player;
     }
 
     public boolean isAfk() {

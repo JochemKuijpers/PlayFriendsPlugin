@@ -1,4 +1,4 @@
-package playfriends.mc.plugin.listeners;
+package playfriends.mc.plugin.features.sleepvoting;
 
 import org.bukkit.Server;
 import org.bukkit.World;
@@ -9,8 +9,8 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.player.*;
 import org.bukkit.plugin.Plugin;
 import playfriends.mc.plugin.MessageUtils;
-import playfriends.mc.plugin.events.PlayerAfkEvent;
-import playfriends.mc.plugin.events.PlayerSleepingVoteEvent;
+import playfriends.mc.plugin.api.ConfigAwareListener;
+import playfriends.mc.plugin.features.afkdetection.AfkPlayerEvent;
 import playfriends.mc.plugin.playerdata.PlayerData;
 import playfriends.mc.plugin.playerdata.PlayerDataManager;
 
@@ -131,7 +131,7 @@ public class SleepVotingHandler implements ConfigAwareListener {
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
-    public void onPlayerAfk(PlayerAfkEvent event) {
+    public void onPlayerAfk(AfkPlayerEvent event) {
         final Player player = event.getPlayer();
         final World world = player.getWorld();
 
@@ -143,7 +143,7 @@ public class SleepVotingHandler implements ConfigAwareListener {
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
-    public void onPlayerVoteByCommand(PlayerSleepingVoteEvent event) {
+    public void onPlayerVoteByCommand(SleepingVotePlayerEvent event) {
         final Player player = event.getPlayer();
         final World world = player.getWorld();
         doSleepVoting(player, world, true, false, true);

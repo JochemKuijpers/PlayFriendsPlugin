@@ -1,4 +1,4 @@
-package playfriends.mc.plugin.listeners;
+package playfriends.mc.plugin.features.afkdetection;
 
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -10,8 +10,7 @@ import org.bukkit.event.player.PlayerVelocityEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import playfriends.mc.plugin.MessageUtils;
-import playfriends.mc.plugin.events.PlayerAfkEvent;
-import playfriends.mc.plugin.events.PlayerAfkToggleEvent;
+import playfriends.mc.plugin.api.ConfigAwareListener;
 import playfriends.mc.plugin.playerdata.PlayerData;
 import playfriends.mc.plugin.playerdata.PlayerDataManager;
 
@@ -57,7 +56,7 @@ public class AfkDetectionHandler implements ConfigAwareListener {
     }
 
     @EventHandler
-    public void onPlayerAfk(PlayerAfkEvent event) {
+    public void onPlayerAfk(AfkPlayerEvent event) {
         if (event.isAfk()) {
             event.getPlayer().sendMessage(MessageUtils.formatMessage(awayMessage));
         } else {
@@ -66,7 +65,7 @@ public class AfkDetectionHandler implements ConfigAwareListener {
     }
 
     @EventHandler
-    public void onPlayerAfkToggle(PlayerAfkToggleEvent event) {
+    public void onPlayerAfkToggle(AfkTogglePlayerEvent event) {
         final Player player = event.getPlayer();
         final PlayerData data = playerDataManager.getPlayerData(player.getUniqueId());
 
@@ -88,7 +87,7 @@ public class AfkDetectionHandler implements ConfigAwareListener {
             // If the player disables AFK detection while they are still registered as AFk, remove the AFK status
             if (data.isAfk()) {
                 data.setAfk(false);
-                pluginManager.callEvent(new PlayerAfkEvent(player, false));
+                pluginManager.callEvent(new AfkPlayerEvent(player, false));
             }
         }
     }
@@ -100,7 +99,7 @@ public class AfkDetectionHandler implements ConfigAwareListener {
 
         if (data.isAfk()) {
             data.setAfk(false);
-            pluginManager.callEvent(new PlayerAfkEvent(player, false));
+            pluginManager.callEvent(new AfkPlayerEvent(player, false));
         }
     }
 }

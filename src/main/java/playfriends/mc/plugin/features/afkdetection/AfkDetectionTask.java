@@ -1,11 +1,11 @@
-package playfriends.mc.plugin.tasks;
+package playfriends.mc.plugin.features.afkdetection;
 
 import org.bukkit.Server;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
-import playfriends.mc.plugin.events.PlayerAfkEvent;
+import playfriends.mc.plugin.api.ScheduledTask;
 import playfriends.mc.plugin.playerdata.PlayerData;
 import playfriends.mc.plugin.playerdata.PlayerDataManager;
 
@@ -72,7 +72,7 @@ public class AfkDetectionTask implements ScheduledTask {
 		// AFK detection: check if the last movement was before (now minus the afk timeout)
 		if (data.getLastMove().isBefore(now.minus(timeout))) {
 			data.setAfk(true);
-			pluginManager.callEvent(new PlayerAfkEvent(player, true));
+			pluginManager.callEvent(new AfkPlayerEvent(player, true));
 		}
 	}
 }

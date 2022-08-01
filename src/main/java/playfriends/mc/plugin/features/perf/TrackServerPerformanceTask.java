@@ -1,7 +1,8 @@
-package playfriends.mc.plugin.tasks;
+package playfriends.mc.plugin.features.perf;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
+import playfriends.mc.plugin.api.ScheduledTask;
 
 import java.time.Clock;
 import java.time.Duration;

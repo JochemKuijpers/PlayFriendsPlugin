@@ -1,4 +1,4 @@
-package playfriends.mc.plugin.listeners;
+package playfriends.mc.plugin.features.peaceful;
 
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.*;
@@ -8,6 +8,7 @@ import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.projectiles.ProjectileSource;
 import playfriends.mc.plugin.MessageUtils;
+import playfriends.mc.plugin.api.ConfigAwareListener;
 import playfriends.mc.plugin.playerdata.PlayerData;
 import playfriends.mc.plugin.playerdata.PlayerDataManager;
 

@@ -1,6 +1,6 @@
-package playfriends.mc.plugin.tasks;
+package playfriends.mc.plugin.playerdata;
 
-import playfriends.mc.plugin.playerdata.PlayerDataManager;
+import playfriends.mc.plugin.api.ScheduledTask;
 
 /** The task to save every player data file every hour. */
 public class SavePlayerDataTask implements ScheduledTask {

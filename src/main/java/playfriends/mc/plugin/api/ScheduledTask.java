@@ -1,6 +1,4 @@
-package playfriends.mc.plugin.tasks;
-
-import playfriends.mc.plugin.ConfigAware;
+package playfriends.mc.plugin.api;
 
 /** A task that's executed with some initial delay and interval. */
 public interface ScheduledTask extends Runnable, ConfigAware {

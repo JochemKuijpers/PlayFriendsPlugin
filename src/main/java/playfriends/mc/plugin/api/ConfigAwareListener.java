@@ -1,7 +1,6 @@
-package playfriends.mc.plugin.listeners;
+package playfriends.mc.plugin.api;
 
 import org.bukkit.event.Listener;
-import playfriends.mc.plugin.ConfigAware;
 
 public interface ConfigAwareListener extends Listener, ConfigAware {
 }

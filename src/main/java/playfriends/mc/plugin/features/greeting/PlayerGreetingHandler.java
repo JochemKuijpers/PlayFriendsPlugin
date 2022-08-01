@@ -1,4 +1,4 @@
-package playfriends.mc.plugin.listeners;
+package playfriends.mc.plugin.features.greeting;
 
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -8,6 +8,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import playfriends.mc.plugin.MessageUtils;
+import playfriends.mc.plugin.api.ConfigAwareListener;
 import playfriends.mc.plugin.playerdata.PlayerData;
 import playfriends.mc.plugin.playerdata.PlayerDataManager;
 

@@ -1,22 +1,15 @@
-package playfriends.mc.plugin.events;
+package playfriends.mc.plugin.features.sleepvoting;
 
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
+import playfriends.mc.plugin.api.PlayerEvent;
 
 /** An event signaling a player's vote to sleep. */
-public class PlayerSleepingVoteEvent extends Event {
+public class SleepingVotePlayerEvent extends PlayerEvent {
     private static final HandlerList HANDLERS_LIST = new HandlerList();
 
-    /** The player. */
-    private final Player player;
-
-    public PlayerSleepingVoteEvent(Player player) {
-        this.player = player;
-    }
-
-    public Player getPlayer() {
-        return player;
+    public SleepingVotePlayerEvent(Player player) {
+        super(player);
     }
 
     @Override
