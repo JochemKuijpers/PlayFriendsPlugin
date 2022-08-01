@@ -1,7 +1,6 @@
 package playfriends.mc.plugin.playerdata;
 
 
-import java.time.Clock;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -36,9 +35,9 @@ public class PlayerData {
     /** Whether the player is considered AFK, not saved. */
     private boolean isAfk;
 
-    public PlayerData(UUID uuid) {
+    public PlayerData(UUID uuid, Instant now) {
         this.uuid = uuid;
-        this.lastMove = Clock.systemUTC().instant();
+        this.lastMove = now;
     }
 
     public UUID getUUID() {

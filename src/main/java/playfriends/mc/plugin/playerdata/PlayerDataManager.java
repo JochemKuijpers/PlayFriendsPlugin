@@ -6,6 +6,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.Clock;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -39,12 +41,16 @@ public class PlayerDataManager {
 
     private final File dataFolder;
     private final Logger logger;
+    private final Clock clock;
+
     private final boolean backedByFileSystem;
     private final Map<UUID, PlayerData> dataByUUID;
 
-    public PlayerDataManager(File dataFolder, Logger logger) {
+    public PlayerDataManager(File dataFolder, Logger logger, Clock clock) {
         this.dataFolder = new File(dataFolder.getPath() + "/" + FOLDER_NAME);
         this.logger = logger;
+        this.clock = clock;
+
         this.backedByFileSystem = prepareDataDirectory();
         this.dataByUUID = new HashMap<>();
 
@@ -72,8 +78,9 @@ public class PlayerDataManager {
     }
 
     public PlayerData getPlayerData(UUID uuid) {
+        final Instant now = clock.instant();
         synchronized (dataByUUID) {
-            return dataByUUID.computeIfAbsent(uuid, PlayerData::new);
+            return dataByUUID.computeIfAbsent(uuid, k -> new PlayerData(k, now));
         }
     }
 
@@ -109,6 +116,7 @@ public class PlayerDataManager {
         long numFiles = 0;
         long numSuccess = 0;
 
+        final Instant now = clock.instant();
         synchronized (dataByUUID) {
             for (File dataFile : fileNames) {
                 numFiles += 1;
@@ -117,7 +125,7 @@ public class PlayerDataManager {
 
                 try {
                     final UUID playerUUID = UUID.fromString(fileUUID);
-                    final PlayerData playerData = dataByUUID.computeIfAbsent(playerUUID, PlayerData::new);
+                    final PlayerData playerData = dataByUUID.computeIfAbsent(playerUUID, uuid -> new PlayerData(uuid, now));
                     Serializers.deserialize(Files.readString(dataFile.toPath()), playerData);
 
                     numSuccess += 1;

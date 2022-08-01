@@ -25,12 +25,19 @@ public class TrackServerPerformanceTask implements ScheduledTask {
 	/** The tick timing linked list, which will store NUM_TICK_TIMES tick intervals. */
 	private final LinkedList<Duration> tickTimes = new LinkedList<>();
 
+	/** The clock, for telling time. */
+	private final Clock clock;
+
 	/** The time of the last tick, or null for the first tick. */
 	private Instant lastTick = null;
 
+	public TrackServerPerformanceTask(Clock clock) {
+		this.clock = clock;
+	}
+
 	@Override
 	public void run() {
-		final Instant now = Clock.systemUTC().instant();
+		final Instant now = clock.instant();
 		if (lastTick != null) {
 			// make sure the list size stays in bounds
 			if (tickTimes.size() >= NUM_TICK_TIMES) {

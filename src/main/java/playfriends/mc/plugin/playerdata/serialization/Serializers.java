@@ -1,10 +1,8 @@
 package playfriends.mc.plugin.playerdata.serialization;
 
 import playfriends.mc.plugin.playerdata.Persistent;
-import playfriends.mc.plugin.playerdata.PlayerData;
 
 import java.lang.reflect.Field;
-import java.time.Clock;
 import java.time.Instant;
 import java.util.*;
 
@@ -12,13 +10,6 @@ import java.util.*;
 public class Serializers {
 	/** The serializer map. */
 	private static final Map<Class<?>, TypeSerializer<?>> serializerMap;
-
-	public static void main(String[] args) throws IllegalAccessException {
-		PlayerData data = new PlayerData(UUID.randomUUID());
-		data.setLastMove(Clock.systemUTC().instant());
-		data.setTimesSeen(10);
-		System.out.println(Serializers.serialize(data));
-	}
 
 	static {
 		serializerMap = new HashMap<>();

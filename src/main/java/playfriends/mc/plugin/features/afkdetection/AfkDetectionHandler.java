@@ -21,15 +21,17 @@ import java.time.Instant;
 public class AfkDetectionHandler implements ConfigAwareListener {
     private final PlayerDataManager playerDataManager;
     private final PluginManager pluginManager;
+    private final Clock clock;
 
     private String awayMessage;
     private String backMessage;
     private String enabledMessage;
     private String disabledMessage;
 
-    public AfkDetectionHandler(Plugin plugin, PlayerDataManager playerDataManager) {
+    public AfkDetectionHandler(Plugin plugin, PlayerDataManager playerDataManager, Clock clock) {
         this.playerDataManager = playerDataManager;
         this.pluginManager = plugin.getServer().getPluginManager();
+        this.clock = clock;
     }
 
     @Override
@@ -78,7 +80,7 @@ public class AfkDetectionHandler implements ConfigAwareListener {
             player.sendMessage(MessageUtils.formatMessage(enabledMessage));
 
             // Register the current time as the last move, so players don't immediately trip AFK detection
-            final Instant now = Clock.systemUTC().instant();
+            final Instant now = clock.instant();
             data.setLastMove(now);
         } else {
             // Inform the player that AFK detection is disabled
@@ -94,7 +96,7 @@ public class AfkDetectionHandler implements ConfigAwareListener {
 
     private void registerPlayerActivity(Player player) {
         final PlayerData data = playerDataManager.getPlayerData(player.getUniqueId());
-        final Instant now = Clock.systemUTC().instant();
+        final Instant now = clock.instant();
         data.setLastMove(now);
 
         if (data.isAfk()) {

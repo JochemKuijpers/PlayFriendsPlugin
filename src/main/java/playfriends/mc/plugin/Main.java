@@ -22,6 +22,7 @@ import playfriends.mc.plugin.features.sleepvoting.SleepingVotePlayerEvent;
 import playfriends.mc.plugin.playerdata.PlayerDataManager;
 import playfriends.mc.plugin.playerdata.SavePlayerDataTask;
 
+import java.time.Clock;
 import java.util.List;
 
 /** Main entry point for the plugin. */
@@ -44,19 +45,21 @@ public class Main extends JavaPlugin {
 
     /** Creates the plugin. */
     public Main() {
-        this.playerDataManager = new PlayerDataManager(getDataFolder(), getLogger());
+        final Clock clock = Clock.systemUTC();
+
+        this.playerDataManager = new PlayerDataManager(getDataFolder(), getLogger(), clock);
         this.configAwareListeners = List.of(
-                new AfkDetectionHandler(this, playerDataManager),
+                new AfkDetectionHandler(this, playerDataManager, clock),
                 new PeacefulMobTargetingHandler(playerDataManager),
                 new PeacefulStateHandler(playerDataManager, getLogger()),
                 new PlayerGreetingHandler(playerDataManager),
                 new SleepVotingHandler(this, playerDataManager)
         );
 
-        performanceMonitor = new TrackServerPerformanceTask();
+        performanceMonitor = new TrackServerPerformanceTask(clock);
         this.scheduledTasks = List.of(
                 new SavePlayerDataTask(playerDataManager),
-                new AfkDetectionTask(this, playerDataManager),
+                new AfkDetectionTask(this, playerDataManager, clock),
                 performanceMonitor
         );
     }

@@ -28,16 +28,20 @@ public class AfkDetectionTask implements ScheduledTask {
 	/** The player data manager to access player data. */
 	private final PlayerDataManager playerDataManager;
 
+	/** The clock, for telling time. */
+	private final Clock clock;
+
 	/** The player index, used to select a different player every tick. */
 	private int playerIndex = 0;
 
 	/** The afk timeout interval. */
 	private Duration timeout;
 
-	public AfkDetectionTask(Plugin plugin, PlayerDataManager playerDataManager) {
+	public AfkDetectionTask(Plugin plugin, PlayerDataManager playerDataManager, Clock clock) {
 		this.server = plugin.getServer();
 		this.pluginManager = server.getPluginManager();
 		this.playerDataManager = playerDataManager;
+		this.clock = clock;
 	}
 
 	@Override
@@ -52,7 +56,7 @@ public class AfkDetectionTask implements ScheduledTask {
 			return; // Can't do AFK detection if there are no players
 		}
 
-		final Instant now = Clock.systemUTC().instant();
+		final Instant now = clock.instant();
 		final List<Player> players = new ArrayList<>(onlinePlayers);
 
 		// get one arbitrary player
