@@ -8,7 +8,7 @@ import java.util.*;
 
 /** The serializers for data fields. */
 public class Serializers {
-	/** The serializer map. */
+	/** The serializer map, statically initialized. */
 	private static final Map<Class<?>, TypeSerializer<?>> serializerMap;
 
 	static {
@@ -20,6 +20,9 @@ public class Serializers {
 		serializerMap.put(Instant.class,	new InstantSerializer());
 		serializerMap.put(Collection.class,	new CollectionSerializer());
 	}
+
+	/** The serializer map for enum types, built at runtime for the specific enum classes it encounters. */
+	private static final Map<Class<?>, EnumSerializer> enumSerializerMap = new HashMap<>();
 
 	/** Separation string between key/values in the serialized string. */
 	public static final String VALUE_SEPARATOR = ": ";
@@ -33,6 +36,9 @@ public class Serializers {
 	 * @throws NoSuchElementException if no such serializer exists
 	 */
 	public static TypeSerializer<?> getSerializer(Class<?> cls) throws NoSuchElementException {
+		if (cls.isEnum()) {
+			return enumSerializerMap.computeIfAbsent(cls, EnumSerializer::new);
+		}
 		if (cls.isPrimitive()) {
 			cls = getBoxedClassFromPrimitive(cls);
 		}
@@ -87,8 +93,11 @@ public class Serializers {
 			}
 
 			final TypeSerializer<Object> serializer = (TypeSerializer<Object>) getSerializer(field.getType());
-			field.setAccessible(true);
-			field.set(into, serializer.deserialize(fieldMap.get(persistentAnnotation.value())));
+			final String newValue = fieldMap.get(persistentAnnotation.value());
+			if (newValue != null) { // only override default if the stored value is present
+				field.setAccessible(true);
+				field.set(into, serializer.deserialize(newValue));
+			}
 		}
 	}
 

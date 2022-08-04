@@ -1,21 +1,27 @@
 name: "PlayFriendsPlugin"
-version: "0.9"
+version: "0.10"
 author: "Jochem Kuijpers"
 main: "playfriends.mc.plugin.Main"
 api-version: "1.19"
 commands:
   chill:
     description: "Chill mode: monsters can't attack you, and you can't attack them. Opposite of /thrill."
-    usage: "Usage: /chill"
+    usage: "/chill"
   thrill:
     description: "Thrill mode: monsters can attack you, and you can attack them! Opposite of /chill."
-    usage: "Usage: /thrill"
+    usage: "/thrill"
   zzz:
     description: "Vote for skipping the night without having to sleep in a bed."
-    usage: "Usage: /zzz"
+    usage: "/zzz"
   perf:
     description: "Check the server's performance."
-    usage: "Usage: /perf"
+    usage: "/perf"
   afktoggle:
     description: "Toggle AFK detection."
-    usage: "Usage /afktoggle"
+    usage: "/afktoggle"
+  keepinventory:
+    description: "Set which items to keep on death."
+    usage: "/keepinventory [none/armor/enchanted/all]"
+  keepxp:
+    description: "Toggle whether to keep your XP on death."
+    usage: "/keepxp"

@@ -11,7 +11,7 @@ public class PlayerData {
 
     /** Whether the player plays on peaceful. */
     @Persistent("peaceful")
-    private boolean peaceful;
+    private boolean peaceful = true;
 
     /** How many times has this person visited the server. */
     @Persistent("times-seen")
@@ -28,6 +28,14 @@ public class PlayerData {
     /** Whether the player has AFK detection enabled. */
     @Persistent("afk-enabled")
     private boolean isAfkEnabled = true;
+
+    /** The keep inventory rule the player has chosen. */
+    @Persistent("keep-inventory")
+    private KeepInventoryRule keepInventory = KeepInventoryRule.NONE;
+
+    /** Whether the player wants to keep XP on death. */
+    @Persistent("keep-xp")
+    private boolean keepXp = false;
 
     /** Whether the data is equivalent to what is on disk. */
     private boolean isDirty;
@@ -62,6 +70,14 @@ public class PlayerData {
 
     public boolean isAfkEnabled() {
         return isAfkEnabled;
+    }
+
+    public KeepInventoryRule getKeepInventory() {
+        return keepInventory;
+    }
+
+    public boolean isKeepXp() {
+        return keepXp;
     }
 
     public boolean isDirty() {
@@ -99,6 +115,16 @@ public class PlayerData {
     public void setAfkEnabled(boolean afkEnabled) {
         isDirty = isDirty || (this.isAfkEnabled != afkEnabled);
         this.isAfkEnabled = afkEnabled;
+    }
+
+    public void setKeepInventory(KeepInventoryRule keepInventory) {
+        isDirty = isDirty || (this.keepInventory != keepInventory);
+        this.keepInventory = keepInventory;
+    }
+
+    public void setKeepXp(boolean keepXp) {
+        isDirty = isDirty || (this.keepXp != keepXp);
+        this.keepXp = keepXp;
     }
 
     public void setAfk(boolean afk) {

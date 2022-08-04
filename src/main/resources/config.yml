@@ -53,13 +53,14 @@ afk:
     enabled: "&7AFK detection is now enabled."
     disabled: "&7AFK detection is now disabled."
 
-whois:
-  not-found: "&cThis player does not exist."
-  no-nickname: "&f%s &7does not have an alias configured."
-  player-aka-alias: "&f%s &7is also known as &f%s&7."
-
-alias:
-  no-alias-greeting: "&7You have not set an alias. See &e/help alias&7."
-  alias-removed: "&eYour alias has been removed."
-  alias-set-to: "&eYour alias is set to &f%s&e. Use &f/whois <player>&e to see their alias."
-  alias-not-allowed: "&cInvalid alias: &f%s&c."
+keepinventory:
+  messages:
+    items-and-xp-restored: "&7Your kept (some of) your items and your XP due to &e/keepinventory&7 and &e/keepxp&7."
+    items-restored: "&7Your kept (some of) your items due to &e/keepinventory&7."
+    xp-restored: "&7Your kept your XP due to &e/keepxp&7."
+    set-none: "&7Keepinventory: &eNo items &7will be kept when you die."
+    set-armor: "&7Keepinventory: &eOnly armor &7will be kept when you die."
+    set-enchanted: "&7Keepinventory: &eOnly enchanted items &7will be kept when you die."
+    set-all: "&7Keepinventory: &eAll items &7will be kept when you die."
+    set-xp-disabled: "&7Keepxp: Your XP &ewill not be kept &7when you die."
+    set-xp-enabled: "&7Keepxp: Your XP &ewill be kept &7when you die."
