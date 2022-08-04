@@ -16,7 +16,10 @@ import playfriends.mc.plugin.features.greeting.PlayerGreetingHandler;
 import playfriends.mc.plugin.features.peaceful.PeacefulMobTargetingHandler;
 import playfriends.mc.plugin.features.peaceful.PeacefulStateHandler;
 import playfriends.mc.plugin.features.peaceful.PeacefulTogglePlayerEvent;
-import playfriends.mc.plugin.features.perf.TrackServerPerformanceTask;
+import playfriends.mc.plugin.features.perf.PerformanceEvent;
+import playfriends.mc.plugin.features.perf.PerformanceHandler;
+import playfriends.mc.plugin.features.perf.PerformanceMonitor;
+import playfriends.mc.plugin.features.perf.PerformanceMonitorTask;
 import playfriends.mc.plugin.features.sleepvoting.SleepVotingHandler;
 import playfriends.mc.plugin.features.sleepvoting.SleepingVotePlayerEvent;
 import playfriends.mc.plugin.playerdata.PlayerDataManager;
@@ -28,39 +31,41 @@ import java.util.List;
 /** Main entry point for the plugin. */
 @SuppressWarnings("unused")
 public class Main extends JavaPlugin {
+    /** The player data manager, to manager the player. */
+    private final PlayerDataManager playerDataManager;
+
+    /** The performance monitor. */
+    private final PerformanceMonitor monitor;
+
     /** The list of enabled config aware event listeners. */
     private final List<ConfigAwareListener> configAwareListeners;
 
     /** The list of scheduled tasks. */
     private final List<ScheduledTask> scheduledTasks;
 
-    /** The player data manager, to manager the player. */
-    private final PlayerDataManager playerDataManager;
-
     /** The server's plugin manager to register event listeners to. */
     private PluginManager pluginManager;
-
-    /** The server performance task, for sending performance metrics. */
-    private final TrackServerPerformanceTask performanceMonitor;
 
     /** Creates the plugin. */
     public Main() {
         final Clock clock = Clock.systemUTC();
 
         this.playerDataManager = new PlayerDataManager(getDataFolder(), getLogger(), clock);
+        this.monitor = new PerformanceMonitor(clock);
+
         this.configAwareListeners = List.of(
                 new AfkDetectionHandler(this, playerDataManager, clock),
                 new PeacefulMobTargetingHandler(playerDataManager),
                 new PeacefulStateHandler(playerDataManager, getLogger()),
                 new PlayerGreetingHandler(playerDataManager),
-                new SleepVotingHandler(this, playerDataManager)
+                new SleepVotingHandler(this, playerDataManager),
+                new PerformanceHandler(this.monitor)
         );
 
-        performanceMonitor = new TrackServerPerformanceTask(clock);
         this.scheduledTasks = List.of(
                 new SavePlayerDataTask(playerDataManager),
                 new AfkDetectionTask(this, playerDataManager, clock),
-                performanceMonitor
+                new PerformanceMonitorTask(monitor)
         );
     }
 
@@ -76,6 +81,8 @@ public class Main extends JavaPlugin {
         final FileConfiguration config = this.getConfig();
         config.options().copyDefaults(true);
         saveDefaultConfig();
+
+        this.monitor.updateConfig(config);
 
         for (ConfigAwareListener configAwareListener : configAwareListeners) {
             configAwareListener.updateConfig(config);
@@ -122,7 +129,7 @@ public class Main extends JavaPlugin {
                     sender.sendMessage("Only players can use this command.");
                 }
             }
-            case "perf" -> performanceMonitor.sendTickStats(sender);
+            case "perf" -> pluginManager.callEvent(new PerformanceEvent(sender));
             default     -> sender.sendMessage("I don't know a command named " + command.getName() + "!");
         }
         return true;

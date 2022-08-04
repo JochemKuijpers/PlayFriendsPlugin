@@ -25,6 +25,9 @@ peaceful:
     already-hostile: "&7You are already in thrill mode. Use the &e/chill &7command if you want monsters to leave you alone."
     cant-attack-hostile: "&cYou cannot attack monsters because you are in chill mode. &7Use the &e/thrill &7command if you want to fight monsters."
 
+perf:
+  window-in-seconds: 10
+
 sleepvoting:
   threshold:
     constant: 2
