@@ -24,7 +24,7 @@ public class KeepInventoryHandler implements ConfigAwareListener {
 	private final PlayerDataManager playerDataManager;
 
 	/** The player's saved items for restoring on respawn. */
-	private final Map<UUID, SavedItems> playerSavedItems = new HashMap<>();
+	private final Map<UUID, ItemStack[]> playerSavedItems = new HashMap<>();
 
 	private String itemsAndXpRestoredMessage;
 	private String itemsRestoredMessage;
@@ -89,7 +89,7 @@ public class KeepInventoryHandler implements ConfigAwareListener {
 			keepInventory = KeepInventoryRule.NONE;
 		}
 
-		// keepxp rule:
+		// keepxp rule: if enabled, don't drop the XP but keep it instead
 		if (playerData.isKeepXp()) {
 			event.setKeepLevel(true);
 			event.setDroppedExp(0);
@@ -105,14 +105,12 @@ public class KeepInventoryHandler implements ConfigAwareListener {
 		// selectively keep inventory, filter for the type of items we want to keep and drop the rest
 		final Predicate<ItemStack> keepPredicate = keepInventory.getPredicate();
 		final ItemStack[] inventory = player.getInventory().getContents();
-		final ItemStack[] armor = player.getInventory().getArmorContents();
 
-		boolean retainedItems = filterInventoryAndDropItems(keepPredicate, inventory, drops);
-		retainedItems = filterInventoryAndDropItems(keepPredicate, armor, drops) || retainedItems;
+		final boolean retainedItems = filterInventoryAndDropItems(keepPredicate, inventory, drops);
 
 		// store the items, if we retained any in either inventory array
 		if (retainedItems) {
-			playerSavedItems.put(playerId, new SavedItems(inventory, armor));
+			playerSavedItems.put(playerId, inventory);
 		}
 	}
 
@@ -122,14 +120,9 @@ public class KeepInventoryHandler implements ConfigAwareListener {
 		final PlayerData playerData = playerDataManager.getPlayerData(player.getUniqueId());
 
 		// Restore items if there are any to restore
-		final SavedItems savedItems = playerSavedItems.remove(player.getUniqueId());
+		final ItemStack[] savedItems = playerSavedItems.remove(player.getUniqueId());
 		if (savedItems != null) {
-			if (savedItems.inventory != null) {
-				player.getInventory().setContents(savedItems.inventory);
-			}
-			if (savedItems.armor != null) {
-				player.getInventory().setArmorContents(savedItems.armor);
-			}
+			player.getInventory().setContents(savedItems);
 		}
 
 		// Let the player know what happened
@@ -168,7 +161,4 @@ public class KeepInventoryHandler implements ConfigAwareListener {
 		}
 		return retainedItems;
 	}
-
-	/** The pair of item stacks to keep on player death. */
-	private record SavedItems(ItemStack[] inventory, ItemStack[] armor) {}
 }
