@@ -25,3 +25,12 @@ commands:
   keepxp:
     description: "Toggle whether to keep your XP on death."
     usage: "/keepxp"
+  pronouns:
+    description: "Set your pronouns for the hoverable nameplate."
+    usage: "/pronouns [The pronouns]"
+  discord:
+    description: "Set your discord username for the hoverable nameplate."
+    usage: "/discord [Discord name]"
+  list:
+    description: "Lists online players with their nameplates."
+    usage: "/list"

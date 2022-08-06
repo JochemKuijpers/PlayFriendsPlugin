@@ -37,6 +37,14 @@ public class PlayerData {
     @Persistent("keep-xp")
     private boolean keepXp = false;
 
+    /** The player's pronouns. */
+    @Persistent("pronouns")
+    private String pronouns;
+
+    /** The player's discord username. */
+    @Persistent("discord-username")
+    private String discordName;
+
     /** Whether the data is equivalent to what is on disk. */
     private boolean isDirty;
 
@@ -115,6 +123,24 @@ public class PlayerData {
     public void setAfkEnabled(boolean afkEnabled) {
         isDirty = isDirty || (this.isAfkEnabled != afkEnabled);
         this.isAfkEnabled = afkEnabled;
+    }
+
+    public String getPronouns() {
+        return pronouns;
+    }
+
+    public void setPronouns(String pronouns) {
+        isDirty = isDirty || (!this.pronouns.equals(pronouns));
+        this.pronouns = pronouns;
+    }
+
+    public String getDiscordName() {
+        return discordName;
+    }
+
+    public void setDiscordName(String discordName) {
+        isDirty = isDirty || (!this.discordName.equals(discordName));
+        this.discordName = discordName;
     }
 
     public void setKeepInventory(KeepInventoryRule keepInventory) {

@@ -64,3 +64,19 @@ keepinventory:
     set-all: "&7Keepinventory: &eAll items &7will be kept when you die."
     set-xp-disabled: "&7Keepxp: Your XP &ewill not be kept &7when you die."
     set-xp-enabled: "&7Keepxp: Your XP &ewill be kept &7when you die."
+
+playerprofile:
+  nameplate: "&dPronouns: &f{{PRONOUNS}}\n&aDiscord: &f{{DISCORD}}"
+  greeting:
+    no-pronouns:  "&7You have not set any pronouns. See &e/help pronouns"
+    pronouns:  "&7Your pronouns are set as &f{{PRONOUNS}}. &7See &e/help pronouns"
+    no-discord:  "&7You have not set a discord name. See &e/help discord"
+    discord:  "&7Your discord name is set to &f{{DISCORD}}&7. See &e/help discord"
+  chat:
+    message: "<{{PLAYER}}> {{MESSAGE}}"
+  commandfeedback:
+    pronouns-set: "&7Your pronouns have been set to &f{{PRONOUNS}}"
+    discord-set: "&7Your discord username has been set to &f{{DISCORD}}"
+  list:
+    message: "&7Players online: &f{{PLAYERS}}"
+    separator: "&7, &f"
