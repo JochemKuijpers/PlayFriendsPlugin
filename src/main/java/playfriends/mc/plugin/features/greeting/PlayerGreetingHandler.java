@@ -93,7 +93,7 @@ public class PlayerGreetingHandler implements ConfigAwareListener {
 
         // Tell them to configure their pronouns & discord username
         if (playerData.getPronouns() == null) {
-            player.sendMessage(pronounsMissingGreeting);
+            player.sendMessage(MessageUtils.formatMessage(pronounsMissingGreeting));
         } else {
             player.sendMessage(MessageUtils.formatMessageWithPlaceholder(
                 pronounsPresentGreeting,
@@ -101,7 +101,7 @@ public class PlayerGreetingHandler implements ConfigAwareListener {
             ));
         }
         if (playerData.getDiscordName() == null) {
-            player.sendMessage(discordMissingGreeting);
+            player.sendMessage(MessageUtils.formatMessage(discordMissingGreeting));
         } else {
             player.sendMessage(MessageUtils.formatMessageWithPlaceholder(discordPresentGreeting,
                 "{{DISCORD}}",
