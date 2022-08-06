@@ -54,16 +54,24 @@ public class PlayerProfileHandler implements ConfigAwareListener {
         );
     }
 
+    private TextComponent getPlayernameWithNameplate(PlayerData playerData) {
+        String nameplate = getPlayerNameplate(playerData);
+        if (nameplate == null) {
+            return new TextComponent(playerData.getPlayerName());
+        }
+        return MessageUtils.formatWithHover(
+            playerData.getPlayerName(),
+            nameplate
+        );
+    }
+
     /**
      * Modify chat messages to display the nameplate on hover
      */
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerChat(AsyncPlayerChatEvent event) {
         PlayerData playerData = this.playerDataManager.getPlayerData(event.getPlayer().getUniqueId());
-        TextComponent nameWithNameplate = MessageUtils.formatWithHover(
-            event.getPlayer().getDisplayName(),
-            this.getPlayerNameplate(playerData)
-        );
+        TextComponent nameWithNameplate = getPlayernameWithNameplate(playerData);
         TextComponent message = MessageUtils.formatMessageWithPlaceholder(
             MessageUtils.formatMessageWithPlaceholder(
                 this.message,
@@ -116,7 +124,7 @@ public class PlayerProfileHandler implements ConfigAwareListener {
             // PlayersDatas sorted
             .map(playerDataManager::getPlayerData)
             // Players names with nameplates sorted
-            .map(data -> MessageUtils.formatWithHover(data.getPlayerName(), this.getPlayerNameplate(data)))
+            .map(this::getPlayernameWithNameplate)
             .collect(Collectors.collectingAndThen(
                 Collectors.reducing(
                     (a,b) -> {
