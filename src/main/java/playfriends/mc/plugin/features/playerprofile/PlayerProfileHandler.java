@@ -12,7 +12,9 @@ import playfriends.mc.plugin.api.ConfigAwareListener;
 import playfriends.mc.plugin.playerdata.PlayerData;
 import playfriends.mc.plugin.playerdata.PlayerDataManager;
 
+import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 public class PlayerProfileHandler implements ConfigAwareListener {
@@ -112,11 +114,18 @@ public class PlayerProfileHandler implements ConfigAwareListener {
         ));
     }
 
+    /**
+     * Construct a playerlist string that contains names with their respective nameplates
+     *
+     * @implNote Because extras count as children of the component, we must be very careful when concatenating multiple TextComponents.
+     * Either each concatenation needs to happen by putting the two elements in the extra of an empty one
+     * Or all elements collected into the extra of a single empty element (less nested / less wasteful end result)
+     */
     @EventHandler
     public void onListCommand(ListPlayersEvent event) {
         Player player = event.getPlayer();
-        String separator = MessageUtils.formatMessage(listResponseSeparator);
-        TextComponent fullMessage = this.plugin.getServer().getOnlinePlayers().stream()
+        TextComponent separator = new TextComponent(MessageUtils.formatMessage(listResponseSeparator));
+        TextComponent playerList = this.plugin.getServer().getOnlinePlayers().stream()
             // Players
             .sorted((o1, o2) -> o2.getDisplayName().compareTo(o1.getDisplayName()))
             // Players sorted
@@ -125,20 +134,25 @@ public class PlayerProfileHandler implements ConfigAwareListener {
             .map(playerDataManager::getPlayerData)
             // Players names with nameplates sorted
             .map(this::getPlayernameWithNameplate)
-            .collect(Collectors.collectingAndThen(
-                Collectors.reducing(
-                    (a,b) -> {
-                        a.addExtra(separator);
-                        a.addExtra(b);
-                        return a;
+            // Add separators
+            .flatMap(nameplate -> Stream.of(separator, nameplate))
+            .skip(1)
+            // Collect into long list and stuff the full list into an empty root textcomponent
+            .collect(
+                Collectors.collectingAndThen(
+                    Collectors.toList(),
+                    (List<TextComponent> nameplatesList) -> {
+                        // ForEach is guaranteed to process in order, unlike reducers
+                        TextComponent comp = new TextComponent();
+                        nameplatesList.forEach(comp::addExtra);
+                        return comp;
                     }
-                ),
-                namesWithPlates -> MessageUtils.formatMessageWithPlaceholder(
-                    listResponseMessage,
-                    "{{PLAYERS}}",
-                    namesWithPlates.orElseGet(() -> new TextComponent("")) // If 0 players online, who sent the command?
                 )
-            ));
-        player.spigot().sendMessage(fullMessage);
+            );
+        player.spigot().sendMessage(MessageUtils.formatMessageWithPlaceholder(
+            listResponseMessage,
+            "{{PLAYERS}}",
+            playerList
+        ));
     }
 }
