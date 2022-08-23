@@ -1,5 +1,6 @@
 package playfriends.mc.plugin.features.playerprofile;
 
+import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -12,7 +13,9 @@ import playfriends.mc.plugin.api.ConfigAwareListener;
 import playfriends.mc.plugin.playerdata.PlayerData;
 import playfriends.mc.plugin.playerdata.PlayerDataManager;
 
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 
 public class PlayerProfileHandler implements ConfigAwareListener {
@@ -114,31 +117,31 @@ public class PlayerProfileHandler implements ConfigAwareListener {
 
     @EventHandler
     public void onListCommand(ListPlayersEvent event) {
-        Player player = event.getPlayer();
-        String separator = MessageUtils.formatMessage(listResponseSeparator);
-        TextComponent fullMessage = this.plugin.getServer().getOnlinePlayers().stream()
-            // Players
-            .sorted((o1, o2) -> o2.getDisplayName().compareTo(o1.getDisplayName()))
-            // Players sorted
-            .map(Player::getUniqueId)
-            // PlayersDatas sorted
-            .map(playerDataManager::getPlayerData)
-            // Players names with nameplates sorted
-            .map(this::getPlayernameWithNameplate)
-            .collect(Collectors.collectingAndThen(
-                Collectors.reducing(
-                    (a,b) -> {
-                        a.addExtra(separator);
-                        a.addExtra(b);
-                        return a;
-                    }
-                ),
-                namesWithPlates -> MessageUtils.formatMessageWithPlaceholder(
-                    listResponseMessage,
-                    "{{PLAYERS}}",
-                    namesWithPlates.orElseGet(() -> new TextComponent("")) // If 0 players online, who sent the command?
-                )
-            ));
-        player.spigot().sendMessage(fullMessage);
+        final Player sender = event.getPlayer();
+
+        // Get a list of players sorted by their display names
+        final List<? extends Player> sortedPlayers = new ArrayList<>(plugin.getServer().getOnlinePlayers());
+        sortedPlayers.sort(Comparator.comparing(Player::getDisplayName));
+
+        // Create a list of components consisting of nameplates and separators
+        final String separator = MessageUtils.formatMessage(listResponseSeparator);
+        final List<BaseComponent> components = new ArrayList<>();
+        for (Player player : sortedPlayers) {
+            final PlayerData playerData = playerDataManager.getPlayerData(player.getUniqueId());
+            final TextComponent nameWithNameplate = getPlayernameWithNameplate(playerData);
+
+            // Append the name and nameplate, separated by separators
+            if (!components.isEmpty()) {
+                components.add(new TextComponent(separator));
+            }
+            components.add(nameWithNameplate);
+        }
+
+        // Add all components to a root component
+        final TextComponent listComponent = new TextComponent();
+        listComponent.setExtra(components);
+
+        // Format the message as configured and send it
+        sender.spigot().sendMessage(MessageUtils.formatMessageWithPlaceholder(listResponseMessage, "{{PLAYERS}}", listComponent));
     }
 }
