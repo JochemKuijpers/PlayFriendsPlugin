@@ -37,6 +37,7 @@ import playfriends.mc.plugin.playerdata.SavePlayerDataTask;
 
 import java.time.Clock;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /** Main entry point for the plugin. */
@@ -226,7 +227,12 @@ public class Main extends JavaPlugin implements TabCompleter {
                 if (sender instanceof Player player) {
                     pluginManager.callEvent(new ListPlayersEvent(player));
                 } else {
-                    sender.sendMessage("Only players can use this command.");
+                    final List<? extends Player> sortedPlayers = new ArrayList<>(this.getServer().getOnlinePlayers());
+                    sortedPlayers.sort(Comparator.comparing(Player::getDisplayName));
+                    sender.sendMessage("Players online: " + sortedPlayers.size() + "/" + this.getServer().getMaxPlayers());
+                    for (Player player : sortedPlayers) {
+                        sender.sendMessage(" * " + player.getName());
+                    }
                 }
             }
             default     -> {
