@@ -1,5 +1,6 @@
 *.iml
-.idea/*
-out/*
-SpigotServer
 .gradle/*
+.idea/*
+SpigotServer
+build/*
+out/*

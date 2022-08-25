@@ -97,9 +97,6 @@ public class PeacefulMobTargetingHandler implements ConfigAwareListener {
             if (isPeacefulPlayer(player)) {
                 event.setCancelled(true);
             }
-        } else if (!HOSTILE_MOBS.contains(target.getType()) && target.getType() != VILLAGER) {
-            // zombies can still attack villagers.
-            event.setCancelled(true);
         }
     }
 
