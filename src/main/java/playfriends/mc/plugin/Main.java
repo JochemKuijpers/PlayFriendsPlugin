@@ -3,6 +3,7 @@ package playfriends.mc.plugin;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
@@ -35,11 +36,12 @@ import playfriends.mc.plugin.playerdata.PlayerDataManager;
 import playfriends.mc.plugin.playerdata.SavePlayerDataTask;
 
 import java.time.Clock;
+import java.util.ArrayList;
 import java.util.List;
 
 /** Main entry point for the plugin. */
 @SuppressWarnings("unused")
-public class Main extends JavaPlugin {
+public class Main extends JavaPlugin implements TabCompleter {
     private static final String ONLY_PLAYERS_CAN_USE_THIS_COMMAND_MSG = ChatColor.RED + "Only players can use this command.";
 
     /** The player data manager, to manager the player. */
@@ -109,6 +111,41 @@ public class Main extends JavaPlugin {
         }
 
         playerDataManager.loadAll();
+    }
+
+
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
+        switch(command.getName()) {
+            // These commands have no arguments
+            case "chill":
+            case "thrill":
+            case "zzz":
+            case "afktoggle":
+            case "keepxp":
+            case "perf":
+            case "list":
+                return List.of();
+
+            // These commands have arguments, but they are not autocompletable
+            // Syntax hints are not available via this API, for that the commands would have to be registered through Brigadier API
+            case "pronouns":
+            case "discord":
+                return List.of();
+
+            // Optionally could filter to only those options that match what the user has typed so far
+            // but i don't think there's any value gained from filtering a list of four options
+            case "keepinventory":
+                List<String> options = new ArrayList<>();
+                for (KeepInventoryRule value : KeepInventoryRule.values()) {
+                    options.add(value.name().toLowerCase());
+                }
+                return options;
+
+            // all other commands should fall back to the default executor
+            default:
+                return null;
+        }
     }
 
     @Override
