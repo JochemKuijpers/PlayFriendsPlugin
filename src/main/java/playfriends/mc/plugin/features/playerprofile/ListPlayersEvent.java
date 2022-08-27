@@ -1,14 +1,19 @@
 package playfriends.mc.plugin.features.playerprofile;
 
-import org.bukkit.entity.Player;
+import org.bukkit.command.CommandSender;
+import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
-import playfriends.mc.plugin.api.PlayerEvent;
 
-public class ListPlayersEvent extends PlayerEvent {
+public class ListPlayersEvent extends Event {
     private static final HandlerList HANDLERS_LIST = new HandlerList();
+    private final CommandSender sender;
 
-    public ListPlayersEvent(Player player) {
-        super(player);
+    public CommandSender getSender() {
+        return sender;
+    }
+
+    public ListPlayersEvent(CommandSender sender) {
+        this.sender = sender;
     }
 
     @Override
