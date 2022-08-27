@@ -224,16 +224,7 @@ public class Main extends JavaPlugin implements TabCompleter {
                 }
             }
             case "list" -> {
-                if (sender instanceof Player player) {
-                    pluginManager.callEvent(new ListPlayersEvent(player));
-                } else {
-                    final List<? extends Player> sortedPlayers = new ArrayList<>(this.getServer().getOnlinePlayers());
-                    sortedPlayers.sort(Comparator.comparing(Player::getDisplayName));
-                    sender.sendMessage("Players online: " + sortedPlayers.size() + "/" + this.getServer().getMaxPlayers());
-                    for (Player player : sortedPlayers) {
-                        sender.sendMessage(" * " + player.getName());
-                    }
-                }
+                pluginManager.callEvent(new ListPlayersEvent(sender));
             }
             default     -> {
                 sender.sendMessage(ChatColor.RED + "I don't know a command named " + command.getName() + "!");

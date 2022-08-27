@@ -2,6 +2,7 @@ package playfriends.mc.plugin.features.playerprofile;
 
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -117,7 +118,7 @@ public class PlayerProfileHandler implements ConfigAwareListener {
 
     @EventHandler
     public void onListCommand(ListPlayersEvent event) {
-        final Player sender = event.getPlayer();
+        final CommandSender sender = event.getSender();
 
         // Get a list of players sorted by their display names
         final List<? extends Player> sortedPlayers = new ArrayList<>(plugin.getServer().getOnlinePlayers());
